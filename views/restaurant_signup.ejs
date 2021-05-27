@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Sign-up</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+      body 
+      {
+        background-image: url('bread.jpeg');
+        background-repeat: no-repeat;
+        background-size: 100%;
+        background-attachment: fixed;
+        background-color: rgb(247, 247, 247);
+        overflow-y: scroll;
+      }
+    </style>
+	</head>
+	<body>
+    <div class="container" style="float: left; margin-left: 5em; overflow-y: scroll; scrollbar-width: none;">
+      <h1 style="margin-top: 2em;"><a href="/homepage" style="color: #fc8019; text-decoration: none;">FoodiePie</a></h1>
+      <!-- <br> -->
+			<% if(attempt==1) 
+        {%>
+	        <h3 style="color: rgb(189, 41, 41)">This Phone Number or Email is used.</h3>
+        <%}
+        else if(signedup==1) {%>
+          <h3 style="color: rgb(89, 118, 205)">Signed up Successfully.</h3>
+        <%}
+      %>
+      <p id="timer" style="margin-top: 8px; color: rgb(89, 118, 205); font-weight: 300; font-size: 14px; display: none;"></p>
+      <form action="/restaurant-signup" method="post" validate>
+        <div class="form-group">
+          <label for="uname">Restaurant Name:</label>
+          <input type="text" class="form-control" id="uname" placeholder="Restaurant's Name" name="name" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="text" class="form-control" id="email" placeholder="Email" name="email" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone:</label>
+          <input type="text" class="form-control" id="phone" placeholder="Phone Number" name="phone" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" class="form-control" id="password" placeholder="Password" name="password" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="address">Address:</label>
+          <input type="text" class="form-control" id="address" placeholder="Address" name="address" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="city">City:</label>
+          <input type="text" class="form-control" id="city" placeholder="City" name="city" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="postal">Postal Code:</label>
+          <input type="text" class="form-control" id="postal" placeholder="Postal Code" name="postal" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="owner">Owner Name:</label>
+          <input type="text" class="form-control" id="owner" placeholder="Owner's Name" name="owner" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="answer">Security Answer:</label>
+          <input type="text" class="form-control" id="answer" placeholder="Security Answer" name="answer" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="cft">Cost For Two:</label>
+          <input type="text" class="form-control" id="cft" placeholder="Approx. Cost For Two" name="cft" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <div class="form-group">
+          <label for="type">Type:</label>
+          <input type="text" class="form-control" id="type" placeholder="Cuisine Type:" name="type" style="width:200px" required>
+          <div class="valid-feedback">Valid.</div>
+          <div class="invalid-feedback">Please fill out this field.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <button type="button" class="btn butn"><a href="/user-signin" style="text-decoration: none;">Sign In?</a></button>
+      <button type="button" class="btn butn"><a href="/user-signup" style="text-decoration: none;">Sign up as user?</a></button>
+		</div>
+
+		<script>
+      // Disable form submissions if there are invalid fields
+			(function() {
+			  'use strict';
+        window.addEventListener('load', function() {
+          // Get the forms we want to add validation styles to
+          var forms = document.getElementsByClassName('needs-validation');
+          // Loop over them and prevent submission
+          var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+              if(form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+              form.classList.add('was-validated');
+            }, false);
+          });
+        }, false);
+			})();
+		</script>
+    <script type="text/javascript">
+      var count = 5;
+      let signedup = '<%-signedup%>';
+
+      function countDown(){
+        var timer = document.getElementById("timer");
+        timer.style.display = "block";
+        if(count > 0) {
+          count--;
+          timer.innerHTML = "Redirecting to sign-in page in " + count +" seconds.";
+          setTimeout("countDown()", 1000);
+        }
+        else {
+          window.location.href = '/restaurant-signin';
+        }
+      }
+      if (signedup == '1') 
+        countDown();
+    </script>
+	</body>
+</html>
+
+  

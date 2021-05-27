@@ -1,0 +1,19 @@
+.butn {
+  background-color: inherit; 
+  margin-top: 10px; 
+  color: black; 
+  padding-left: 0px; 
+  border: none;
+}
+
+.d {
+  text-decoration: none;
+}
+
+.c {
+  text-align: center;
+}
+
+.t {
+  text-transform: capitalize;
+}

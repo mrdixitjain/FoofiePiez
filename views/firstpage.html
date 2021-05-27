@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	  <title>Order Food Online On Foodieie</title>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, initial-scale=1">
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	  <style>
+      .nav {
+        background-color: inherit; 
+        list-style-type: none;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+      }
+      .nav li {
+        display: inline-block;
+        /* float: left; */
+        font-size: 10px;
+        padding: 7px;
+      }
+      body 
+      {
+        background-image: url('bread.jpeg');
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: rgb(247, 247, 247);
+      }
+    </style>
+	</head>
+  <body style="background-color: rgb(247, 247, 247);">
+    <div class="container" style="width: 700px; margin-left: 5%;  border: ivory; display: inline-block; position: absolute;">
+      <ul class="nav">
+        <div style="margin-top: 10%;">
+          <li><a href="/homepage" style="text-decoration: none;"><h1 style="color: #fc8019; ">FoodiePie</h1></a></li>
+        </div>
+      </ul>
+      <div>
+        <h3 style="color: #686b78; padding-left: 7px; width: 700px;" >Order favourite food from restaurants near you</h3>
+        <div class="row mb-5" style="height: 100px">
+          <div class="col-lg-8" style="padding: 20px; margin-left: 0px; padding-top: 0px; padding-left: 0px;">
+            <div class="rounded" style="padding-top: 20px; padding-left: 25px;">
+              <form action="/search-by-location" method="post" style="">
+                <div class="form-group mb-4">
+                  <input id="location" type="text" name="location" placeholder="Enter Your Location" class="form-control form-control-underlined" onkeypress="search(this.value)" value="" required>
+                  <br>
+                  <input id="location" type="location" placeholder="Enter Your City" name="city" class="form-control form-control-underlined" value="" required>
+                  <button style="width: 0px; cursor: default;" class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" id="locationButton" >
+                    <span class="navbar-toggler-icon" style="width: 0;"></span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
