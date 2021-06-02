@@ -4,6 +4,7 @@
     <title>Order Food Online On Foodieie</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="javascript:void(0)" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -23,17 +24,14 @@
       .container {
         padding: 2px 16px;
       }
-
       body 
       {
-        background-image: url('img5.jpeg');
+        /* background-image: url('img5.jpeg'); */
         background-repeat: no-repeat;
         background-size: 100%;
         background-attachment: fixed;
-        background-color: rgb(247, 247, 247);
-        font-family: "Lato", sans-serif;
-        overflow-x: scroll;
         text-transform: capitalize;
+        background-color: rgb(247, 247, 247);
       }
     </style>
   </head>
@@ -65,12 +63,12 @@
             </li>          
           </ul>
           <ul class="navbar-nav" style="margin-right: 50px; font-size: 16px;font-weight: 500;"> 
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <h4 type="button" class="btn" data-toggle="modal" data-target="#myModal" style="background-color: #343a40 !important; border-color: #343a40 !important; margin-right: 30px; color: white;">
                 <i class="fa fa-search"></i>
               </h4>
-              <!-- The Modal -->
-            </li>
+              The Modal
+            </li> -->
             <% if(user.signed_in) {%>
               <li class="nav-item">
                 <div class="dropdown" style="text-align: center; align-content: center; height: 10px">
@@ -112,7 +110,7 @@
               </li>
             <%}%>
           <li class="nav-item" style="padding-top: 5px; margin-top: 5px"">
-            <a href="/viewCart" style="color: white; text-decoration: none;"><i class="fa fa-shopping-cart fa-lg"></i></a>
+            <a href="/viewCart" style="color: white; text-decoration: none;"><span style="color: white" class="cart" ><%= cart_num %></span><i class="fa fa-shopping-cart fa-lg"></i></a>
           </li>
           </ul>
         </div>
@@ -120,17 +118,18 @@
     </div>
     <br>
     <br>
-    <h1 id='<%= name %>' style="color: #343a40; margin-left: 200px; margin-top: 50px;"><b><%= name %></b></h1>
-    <div class="container" style="width: 1200px;">
-      <div class="card-columns" style="column-count: 4;">
-        <% for(var i=0; i < 20; i++) {%>
-          <div class="card" id="card" style="width: 250px; margin-left: 20px; cursor: default;">
+    <h1 id='<%= name %>' style="color: #343a40; margin-left: 180px; margin-top: 50px;"><b><%= name %></b></h1>
+    <br>
+    <div class="container" style="min-width: 800px; max-width: 1000px;">
+      <div class="card-columns" style="column-count: 3;">
+        <% for(var i=0; i < searchDetail.length; i++) {%>
+          <div class="card" id="card" style="width: auto; margin-left: 20px; cursor: default;">
             <img src="https://res.cloudinary.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_508,h_320,c_fill/aylqjejobls1aobd0fun" class="card-img-top" alt="">
             <div class="card-body">
-              <h5 class="card-title" class="dish" id="<%= searchDetail[0].name %>name"><%= searchDetail[0].name %></h5>
-              <p class="card-text" id="<%= searchDetail[0].name %>quantity"><%= searchDetail[0].quantity %></p>
-              <p class="card-text" id="<%= searchDetail[0].name %>price"><%= searchDetail[0].price %></p>
-              <button class="add" style="float: right; margin-bottom: 10px; width: 100%;" id="<%= searchDetail[0].name %>">add</p>
+              <h5 class="card-title" class="dish" id="<%= searchDetail[i].name + '_' + i %>_name"><%= searchDetail[i].name %></h5>
+              <p class="card-text" id="<%= searchDetail[i].name + '_' + i %>_quantity"><%= searchDetail[i].quantity %></p>
+              <p class="card-text" id="<%= searchDetail[i].name + '_' + i %>_price"><%= searchDetail[i].price %></p>
+              <button class="add" style="text-align: center; padding-top: 10px; float: right; margin-bottom: 10px; width: 100%;" id="<%= searchDetail[i].did %>">Add</p>
             </div>
           </div>
         <%}%>
@@ -139,46 +138,28 @@
     <p id="print"></p>
 
     <script>
-      $(document).ready(()=>{
-      // var input = document.getElementById("location");
-      // input.addEventListener("keyup", function(event) {
-      //   if (event.keyCode === 13) {
-      //    event.preventDefault();
-      //    document.getElementById("locationButton").submit();
-      //   }
-      // });
-      var x = 1;
-    $(document).on('click', '.add', function(data){
-        console.log('button clicked');
-          let dish_name_id = $(this).attr('id');
-          let dish_price_id = '#'+dish_name_id+'price';
-          console.log('hello')
-          console.log($(dish_price_id).html())
-          console.log($(dish_price_id))
-          let res_name = $('h1').attr('id');
-          let username = $('#user-name').html();
-          console.log(res_name,dish_price_id,dish_name_id,$(dish_price_id).html(),username);
-          let obj = {restaurantName:res_name,dish_name:dish_name_id,dish_price:$(dish_price_id).html(),userName:username};
-          console.log(obj,$('.cart').html(),$('.cart').find('i'));
-          
-          if(!username){
-            window.location.href='/user-signin';
+      $(document).ready(() => {
+        var x = <%= cart_num %> + 1;
+        $(document).on('click', '.add', function(data){
+          let signed_in = <%= user.signed_in %>;
+          if(!signed_in) {
+            window.location.href = "/user-signin";
           }
-          else{
-          $.post('/addToCart',{obj},(data)=>{
-              if(data == 'done'){
-                
-                $('.cart').html(x);
-                x+=1;
-                
+          else {
+            console.log('button clicked');
+            let dish_id = $(this).attr('id');
+            obj = {did:dish_id};
+            
+            $.post('/addToCart', {obj}, (data) => {
+              if(data['done'] == 'done'){                
+                $('.cart').html(data.cart_num);
+                x = data.cart_num;
+                x+=1;                
               }
-              else{
-              }
-          })
-          //window.location.href="/addToCart";
-            }
-    });
-    });
+            })
+          }
+        });
+      });
     </script>
   </body>
 </html> 

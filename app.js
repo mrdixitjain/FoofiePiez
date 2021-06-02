@@ -16,12 +16,14 @@ app.set('view engine', 'ejs');
 app.use(session({
   secret: 'keyboard cat',
   'redirectTo': "",
-	'location': "",
-	'city': "",
+	'location': "malaviya nagar",
+	'city': "jaipur",
 	'updateFailed': 2,
   resave : false,
   saveUninitialized : false
-}))
+}));
+
+store = {};
 
 // create connection with mysql database
 var con = mysql.createConnection({
@@ -40,14 +42,15 @@ con.connect(function(err){
 app.use('/',router);
 
 router.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '/views/firstpage.html'));
+  res.redirect("/homepage");
+  // res.sendFile(path.join(__dirname, '/views/firstpage.html'));
 });
 
 app.route("/user-signin")
   .get((req, res) => {
     res.render("user_signin", {
       "attempt" : 0,
-      "wrongField" : "Email",
+      "wrongField" : "",
     });
   })
   .post((req, res) => {
@@ -55,21 +58,43 @@ app.route("/user-signin")
     var password = "" + req.body.password;
     sql = "SELECT * FROM user WHERE email = ?;"
     con.query(sql, [email], function(err, results, fields) {
-      if (err) throw err;
+      if (err) {
+        console.log("SQL error in /user-signin");
+        console.log(err);
+        res.redirect("/user-signin");
+      };
 
       if(results.length == 0) {
         res.render("user_signin", {attempt:1, wrongField:'Email'});
       }
       else if(results[0].password == password) {
-        req.session.username = results[0].name;
-        req.session.email = results[0].email;
-        req.session.phone = results[0].phone;
-        req.session.password = results[0].password;
-        req.session.uid = results[0].uid;
-        res.redirect("/homepage");
+        let uid = results[0].uid;
+        sql = 'SELECT SUM(quantity) sq FROM cart WHERE uid = ?;';
+        con.query(sql, [uid], (err, result) => {
+          if (err) {
+            console.log("SQL error in /user-signin while fetching cart");
+            console.log(err);
+            res.redirect("/user-signin");
+          }
+          else {
+            req.session.username = results[0].name;
+            req.session.email = results[0].email;
+            req.session.phone = results[0].phone;
+            req.session.password = results[0].password;
+            req.session.uid = results[0].uid;
+            req.session.userDetail = {
+              name : req.session.username,
+              phone : req.session.phone,
+              email : req.session.email,
+              password : req.session.password
+            };
+            req.session.cart_num = result[0].sq;
+            res.redirect("/homepage");
+          }
+        });
       }
       else {
-        res.render("user_signin", {attempt:1, wrongField:'Password'})
+        res.render("user_signin", {attempt:1, wrongField:'Password'});
       }
     });
   });
@@ -168,15 +193,11 @@ app.route('/user-forgot-password')
 
 router.get('/homepage', (req, res) => {
 
-  // let sql1 = "SELECT * FROM user;";
-  // con.query(sql1, (err, results) => {
-  //   console.log(results);
-  // });
-
-  // sql1 = "DESCRIBE user;";
-  // con.query(sql1, (err, results) => {
-  //   console.log(results);
-  // });
+  req.session.location = "malaviya nagar";
+  req.session.city = 'jaipur';
+  if (!req.session.cart_num) {
+    req.session.cart_num = 0;
+  }
   
   if(!('location' in req.session) || req.session.location=="" || req.session.city=="") {
     res.redirect("/");
@@ -185,11 +206,11 @@ router.get('/homepage', (req, res) => {
     var location = req.session.location;
     var city = req.session.city;
 
-    let sql = "SELECT * FROM restaurant where city = ?;";
+    let sql = "SELECT * FROM restaurant WHERE city = ? AND rid IN (SELECT rid FROM dish GROUP BY rid HAVING COUNT(rid) >= 1);";
     con.query(sql, [city], (err, results) => {
       if (err) {
         console.log("Error in /homepage.");
-        console.log("error");
+        console.log(err);
         res.redirect("/homepage");
       }
       else {
@@ -213,10 +234,6 @@ router.get('/homepage', (req, res) => {
         else {
           userDetail = {}
         }
-        console.log(userDetail);
-        console.log(updateFailed);
-        console.log(signed_in);
-        console.log("")
         res.render("homepage", {
           user : {
             "signed_in" : signed_in,
@@ -224,7 +241,8 @@ router.get('/homepage', (req, res) => {
           },
           "updateFailed" : updateFailed,
           'location' : req.session.location,
-          'searchDetail' : results
+          'searchDetail' : results,
+          cart_num : req.session.cart_num
         });
       }
     });
@@ -248,13 +266,6 @@ router.route('/restaurant-signup')
     let cft = req.body.cft;
     let type = req.body.type;
 
-    let sql = 'DESCRIBE restaurant;'
-
-    con.query(sql, (err, results) => {
-      if (err) throw err;
-      console.log(results);
-    });
-
     // sql = `CREATE TABLE restaurant (
     //   rid varchar(20),
     //   name varchar(255),
@@ -269,11 +280,6 @@ router.route('/restaurant-signup')
     //   cost varchar(255),
     //   type varchar(255)
     // );`
-
-    // con.query(sql, (err, results) => {
-    //   if (err) throw err;
-    //   console.log(results);
-    // });
 
     sql = `SELECT * FROM restaurant
       WHERE phone=? OR email=?;`;
@@ -301,6 +307,10 @@ router.route('/restaurant-signup')
 
 app.route('/restaurant-signin')
   .get((req,res) => {
+    let sql = "SELECT * FROM restaurant;";
+    con.query(sql, (err, results) => {
+      console.log(results);
+    });
     res.render('restaurant_signin', {attempt: 0, wrongField: ""});
   })
   .post((req, res) => {
@@ -310,7 +320,6 @@ app.route('/restaurant-signin')
     con.query(sql, [email], function(err, results, fields) {
       if (err) {
         console.log("MYSQL ERROR IN /restaurant-signin");
-        console.log("");
         console.log(err);
         res.render('restaurant_signin', {attempt: 0, wrongField: ""});
       };
@@ -326,13 +335,6 @@ app.route('/restaurant-signin')
         res.set('Access-Control-Allow-Origin','*');
         sql = `SELECT r.name rname, r.rid, d.name, d.price, d.quantity 
           FROM restaurant r LEFT JOIN dish d ON d.rid = r.rid WHERE r.email = ? and r.password = ?;`;
-        // let sql = "SELECT * FROM restaurant where email = ?;";
-        // let sql2 = "SELECT * FROM dish;";
-        // sql2 = 'DESCRIBE dish;';
-
-        // con.query(sql2, (err, results) => {
-        //   console.log(results);
-        // })
 
         con.query(sql, [email, pass], (err, results) => {
           if (err) {
@@ -386,11 +388,6 @@ app.route('/restaurant-forgot-password')
 		var answer = req.body.securityAnswer;
     var password = req.body.password;
     var password2 = req.body.password2;
-    // let sql = "DESCRIBE restaurant;"
-    // con.query(sql, (err, results) => {
-    //   if (err) throw err;
-    //   console.log(results);
-    // })
     let sql = "SELECT answer FROM restaurant WHERE email = ?;";
 		con.query(sql, [email], (err, results)=>{
 			if(results.length == 0){
@@ -441,7 +438,6 @@ app.post('/add/dish',(req,res)=>{
       res.send("not-inserted in dish table");
     }
     else {
-      console.log(data);
       var did = results.length + 1;
       var dish = data.dish.toLowerCase();
       var quantity = data.quantity.toLowerCase();
@@ -489,7 +485,6 @@ app.post('/update-profile', (req, res)=> {
 			res.redirect('/homepage');
 		}
 		else{
-			console.log('profile updated');
 			req.session.updateFailed = 0;
       req.session.phone = phone;
       req.session.email = email;
@@ -500,164 +495,313 @@ app.post('/update-profile', (req, res)=> {
 });
 
 app.get('/restaurant', (req, res) => {
-	res.redirect('/dashboard');
+	res.redirect('/homepage');
 });
 
-
-app.get("/restaurant/:id", (req, res) => {
-  var restaurant = req.params.id.toLowerCase();
-
-  function getRID () {
-    let rid;
-    let sql="SELECT rid FROM restaurant WHERE name = ?;";
-    con.query(sql, [restaurant], (err, results) => {
-      if(err) {
-        console.log("SQL error in /restaurants/:id");
-        res.redirect("\homepage");
-      }
-      console.log("hey");
-      console.log(results);
-      rid = results[0].rid;
-    });
-    return Promise.resolve(rid);
+app.get("/restaurant/:id", (req, res)=>{
+  if(!('location' in req.session || req.session.city=="" || req.session.location=="")) {
+    res.redirect("/homepage");
   }
+	var user={userDetail: {}, signed_in: false};
+	if(req.session.email){
+		user.signed_in = true;
+    user.userDetail = req.session.userDetail;
+	}
+	var restaurant=req.params.id;
+	var sql="SELECT * FROM dish WHERE rid in (SELECT rid FROM restaurant WHERE name = ?);";
+	con.query(sql, [restaurant], (err, results)=>{
+		if(err) {
+      console.log("SQL error in /restaurant/:id.");
+    }
+		req.session.rid = results[0].rid;
+    req.session.restaurantName = restaurant;
+		if (!(err || results.length==0)){
+      res.render('restaurant', {
+                  user: user, 
+                  name: restaurant, 
+                  rid: req.session.rid, 
+                  searchDetail: results, 
+                  status: 1, 
+                  location: req.session.location,
+                  cart_num : req.session.cart_num
+                });
+    }
+    else{
+      res.render('restaurant', {
+                  user: user, 
+                  name: restaurant, 
+                  rid: req.session.rid, 
+                  searchDetail: results, 
+                  status: 0, 
+                  location: req.session.location,
+                  cart_num : req.session.cart_num
+                });
+    }
+	});
+});
 
-  async function getDishes() {
-    console.log("hello");
-    const rid = await getRID();
-    console.log("hello2");
-    console.log(rid);
-    console.log("hello3");
-    let sql = "SELECT * FROM dish WHERE rid = ?"
-    con.query(sql, [rid], (err, results) => {
-      console.log(results);
-      if (!(err || results.length == 0)) {
-        res.render('restaurant', {
-          user : {
-            "signed_in" : true,
-            userDetail : {
-              "name" : 'dixit',
-              'phone' : '8742051270',
-              'email' : 'jainraj.raj123@gmail.com',
-              'password' : "dixit",
-            },
-          },
-          "rid" : rid,
-          "status" : 1,
-          "name" : restaurant,
-          'location' : req.session.location,
-          'searchDetail' : results
-        });
+app.get('/logout', (req, res) => {
+  let city = req.session.city;
+  let location = req.session.location;
+  if (req.session.email) {
+    req.session.destroy(function(err) {
+      if(err){
+        console.log('unable to destroy session')
       }
       else{
-        res.render('restaurant', {
-          user : {
-            "signed_in" : true,
-            userDetail : {
-              "name" : 'dixit',
-              'phone' : '8742051270',
-              'email' : 'jainraj.raj123@gmail.com',
-              'password' : "dixit",
-            },
-          },
-          "rid" : rid,
-          "status" : 0,
-          "name" : restaurant,
-          'location' : req.session.location,
-          'searchDetail' : results
-        });
+        console.log('logged out')
       }
     });
+    res.redirect('/homepage');
+  } 
+  else {
+    res.redirect('/homepage');
   }
-  
-  getDishes(); 
+});
 
-  // function executeAsyncTask () {
-  //   let valueA;
-  //   return getRID()
-  //     .then((v) => {
-  //       console.log("hello");
-  //       console.log(v);
-  //       valueA = v;
-  //       return getDishes(valueA);
-  //     })
-  // }
+// app.route('/orders')
+// 	.get((req, res, next)=> {
 
-  // function functionA() {
-  //   return 1;
-  // }
+//     let sql1 = `CREATE TABLE order (
+//                   oid varchar(20),
+//                   uid varchar(20),
+//                   rid varchar(20),
+//                   total varchar(20),
+//                   address varchar(255),
+//                   paymethod varchar(255)
+//                 )`
+//     sql1 = `CREATE TABLE orderitems (
+//               oid varchar(20),
+//               did varchar(20)
+//             );`;
+//     if(!req.session.email) {
+//       req.session.redirectTo = '/orders';
+//       res.redirect('/user-signin');
+//     }
+//     else {
+//       next();
+//     }
+//   }, function(req, res, next) {
+//       var email = req.session.email;
+//       var user={userDetail: req.session.userDetail, signed_in: true, search: false};      
+//       var uid = req.session.uid;
+//       var ans=""
+//       let sql = `SELECT * FROM (SELECT o.*, r.name FROM order o LEFT JOIN restaurant r
+//                   ON o.rid = r.rid where o.uid = ?) as tbl LEFT JOIN orderitem on
+//                   tbl.oid = orderitems.oid LEFT JOIN dish on orderitems.did = dish.did;`;
+//       // "select * from (select o.*, restaurants.name from orders o  left join  restaurants on o.rid=restaurants.rid where o.uid=?) as tbl left join oitems on  tbl.oid = oitems.oid;"
+//       console.log('query done')
+//       con.query(sql, [uid], (err, results)=>
+//         {
+//           if (err) throw err;
 
-  // function functionB(val) {
-  //   return val*2;
-  // }
+//           else if(results.length==0)
+//           {
+//             console.log('no previous orders')
+//             res.render('noOrders.ejs', {user: user})
+//           }
 
-  // function functionC(vala, valb) {
-  //   return vala + valb;
-  // };
+//           else
+//           {
+//             var i=0;
+//             while(i<results.length){
+//               results[i].orderDetail={1: {dishName: results[i].dishName, quantity: results[i].quantity, price: results[i].price}}
+//               delete results[i].dishName
+//               delete results[i].quantity
+//               delete results[i].price
+//               var j=i+1
+//               var k=2
+//               while(j<results.length && results[j].oid==results[i].oid){
+//                 results[i].orderDetail[2] = {dishName: results[j].dishName, quantity: results[j].quantity, price: results[j].price}
+//                 results.splice(j, j+1)
+//               }
+//               i++;
+//             }
+//             console.log(results)
+//             console.log(results[0].orderDetail)
+//             res.render('prevOrders.ejs', {results:results, user: user})
+          
+//           }
+//         }
+//       )
+//     }
+// 	)
 
-  // function executeAsyncTask1 () {
-  //   return functionA()
-  //     .then((valueA) => {
-  //       return functionB(valueA)
-  //         .then((valueB) => {          
-  //           return functionC(valueA, valueB)
-  //         })
-  //     })
-  // }
+app.route('/addToCart')
+	.post(function(req, res) {
+    let did = req.body.obj.did;
+    let rid = req.session.rid;
+    let uid = req.session.uid;
 
-  // res.send(executeAsyncTask1());
-	// var restaurant = req.params.id.toLowerCase();
-  // console.log(restaurant);
-  // let sql="SELECT rid FROM restaurant WHERE name = ?;";
-	// const rows = con.query(sql, [restaurant], (err, results) => {
-	// 	if(err) throw err;
-  //   console.log(results);
-  // });
-  // console.log(rows);
-  //   else {
-  //     console.log(results);
-  //     let rid = results[0].rid
-  //     sql = "SELECT * FROM dish WHERE rid = ?"
-  //     con.query(sql, [rid], (err, results) => {
-  //       if (!(err || results.length == 0)) {
-  //         res.render('restaurant', {
-  //           user : {
-  //             "signed_in" : true,
-  //             userDetail : {
-  //               "name" : 'dixit',
-  //               'phone' : '8742051270',
-  //               'email' : 'jainraj.raj123@gmail.com',
-  //               'password' : "dixit",
-  //             },
-  //           },
-  //           "rid" : rid,
-  //           "status" : 1,
-  //           "name" : restaurant,
-  //           'location' : req.session.location,
-  //           'searchDetail' : results
-  //         });
-  //       }
-  //       else{
-  //         res.render('restaurant', {
-  //           user : {
-  //             "signed_in" : true,
-  //             userDetail : {
-  //               "name" : 'dixit',
-  //               'phone' : '8742051270',
-  //               'email' : 'jainraj.raj123@gmail.com',
-  //               'password' : "dixit",
-  //             },
-  //           },
-  //           "rid" : rid,
-  //           "status" : 0,
-  //           "name" : restaurant,
-  //           'location' : req.session.location,
-  //           'searchDetail' : results
-  //         });
-  //       }
-  //     });
-	// 	}
-	// })
-})
+    let sql = `SELECT * FROM cart WHERE uid = ?`;
+    con.query(sql, [uid], (err, results) => {
+    if (err) {
+        console.log("SQL error in /addToCart.");
+        console.log(err);
+        res.redirect("/restaurant/"+req.session.restaurantName);
+      }
+      else if(results.length != 0) {
+        if (results[0].rid != rid) {
+          sql = `DELETE FROM cart WHERE uid = ?;`;
+          con.query(sql, [uid], (err, results) => {
+            if (err) {
+              console.log("SQL error in /addToCart.");
+              console.log(err);
+              res.redirect("/restaurant/"+req.session.restaurantName);
+            }
+            else {
+              sql = `INSERT INTO cart VALUES(?, ?, ?, ?);`;
+              con.query(sql, [uid, rid, did, 1], (err, results) => {
+                if (err) {
+                  console.log("SQL error in /addToCart.");
+                  console.log(err);
+                  res.redirect("/restaurant/"+req.session.restaurantName);
+                }
+                else {
+                  req.session.cart_num = 1;
+                  res.send({
+                    'done' : 'done',
+                    cart_num : req.session.cart_num
+                  });
+                }
+              });
+            }
+          });
+        }
+        else {
+          let i = 0;
+          for(i = 0; i < results.length; i++) {
+            if (results[i].did == did) {
+              break;
+            }
+          }
+          if (i < results.length) {
+            sql = `UPDATE cart
+                    SET quantity = quantity+1
+                    WHERE did = ?;`;
+            con.query(sql, [did], (err, results) => {
+              if (err) {
+                console.log("SQL error in /addToCart.");
+                console.log(err);
+                res.redirect("/restaurant/"+req.session.restaurantName);
+              }
+              else {
+                req.session.cart_num += 1;
+                res.send({
+                  'done' : 'done',
+                  cart_num : req.session.cart_num
+                });
+              }
+            });
+          }
+          else {
+            sql = `INSERT INTO cart VALUES(?, ?, ?, 1);`;
+            con.query(sql, [uid, rid, did], (err, results) => {
+              if (err) {
+                console.log("SQL error in /addToCart.");
+                console.log(err);
+                res.redirect("/restaurant/"+req.session.restaurantName);
+              }
+              else {
+                req.session.cart_num += 1;
+                res.send({
+                  'done' : 'done',
+                  cart_num : req.session.cart_num
+                });
+              }
+            });
+          }
+        }
+      }
+      else {
+        sql = `INSERT INTO cart VALUES(?, ?, ?, 1);`;
+        con.query(sql, [uid, rid, did], (err, results) => {
+          if (err) {
+            console.log("SQL error in /addToCart.");
+            console.log(err);
+            res.redirect("/restaurant/"+req.session.restaurantName);
+          }
+          else {
+            req.session.cart_num += 1;
+            res.send({
+              'done' : 'done',
+              cart_num : req.session.cart_num
+            });
+          }
+        });
+      }
+    }); 
+	})
+	.get(function(req,res) {
+		res.redirect("/homepage");
+	});
+
+app.route('/viewCart')
+	.get((req, res, next) => {
+    if(!req.session.email) {
+      req.session.redirectTo = '/viewCart';
+      res.redirect('/user-signin');
+    }
+    else {
+      next();
+    }
+  }, function(req, res) {
+      var user = {userDetail: {}, signed_in: false};
+      if(req.session.email){
+        user.signed_in = true;
+        user.userDetail = req.session.userDetail;
+      }
+      var a= async function() {
+        var uid=store.userDetail['uid'];
+        var c = await function(){
+          console.log(uid+"in cart")
+          let sql = `SELECT distinct c.name AS name, c.quantity, c.price, r.name as restaurantName,
+                      r.rid as rid FROM cart c INNER JOIN 
+          select distinct c.name as name, c.quantity, c.price, 
+          r.name as restaurantName, r.rid as rid from cart c inner join restaurants r on c.rid=r.rid where uid=?;`	;			
+          con.query(sql, [uid], function(err, results, fields) {
+            console.log(results);
+            if(results.length==0){
+              res.render('cart-is-empty', {user: user});
+            }
+            else {
+              console.log('hello');
+              var cartTotal=0;
+              for(var i=0; i<results.length; i++){
+                cartTotal=cartTotal+results[i].price*results[i].quantity;
+              }
+              console.log('in cart');
+              store['cartTotal']=cartTotal.toFixed(2);
+              store['cartDetail']=results;
+              store['rid']=results[0].rid;
+              res.render('viewCart', {
+                          user: user, 
+                          cartDetail: results, 
+                          cartTotal: cartTotal, 
+                          mayOrder: store.mayOrder
+                        }
+              );
+            }
+          });
+        }
+
+        var b = await function() {
+          let sql = `SELECT * FROM orders where uid=? and status='ongoing;`;
+          con.query(sql, [uid], (err, results,) => {
+            if(results.length >= 2) {
+              store['mayOrder']=false;
+            }
+            else {
+              store['mayOrder']=true;
+            }
+            console.log(results);
+            console.log(store.mayOrder);
+            c();
+          });
+        }
+        await b();				
+      }
+      a();
+    })
 
 app.listen(8080, () => console.log(`App started on port 8080`)); 
