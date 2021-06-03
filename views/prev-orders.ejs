@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Order Food Online On Foodieie</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- <link rel="stylesheet" type="text/css" href="css/homepage.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript">
+      $(document).ready(function(){
+        <% if(updateFailed == 1){%>
+          alert('Update Failed. Either server issue or this Email or Phone is being used by other user.');
+          <%}
+          else if(updateFailed == 0){%>
+            alert('Update done');
+          <%}
+        %>
+      });
+
+      function openNav() {
+        // document.getElementById("updateProfile").style.width = "0";
+        // document.getElementById("mySidenav").style.width = "280px";
+        document.getElementById("updateProfile").style.display = "none";
+        document.getElementById("mySidenav").style.display = "block";
+      }
+
+      function closeNav() {
+        // document.getElementById("mySidenav").style.width = "0";
+        document.getElementById("mySidenav").style.display = "none";
+      }
+
+      function openNavUpdate() {
+        // document.getElementById("mySidenav").style.width = "0";
+        // document.getElementById("updateProfile").style.width = "280px";
+        document.getElementById("mySidenav").style.display = "none";
+        document.getElementById("updateProfile").style.display = "block";
+      }
+
+      function closeNavUpdate() {
+        // document.getElementById("updateProfile").style.width = "0";
+        document.getElementById("updateProfile").style.display = "none";
+      }
+    </script>
+    <style>
+      body 
+      {
+        /* background-image: url('bread.jpeg'); */
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: rgb(247, 247, 247);
+      }
+      .modal-body {
+        position: relative;
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
+        padding: 0.5rem;
+      }
+    </style>
+  </head>
+  <body style="align-content: center; text-align: center;align-self: center;">
+    <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
+      <nav class="navbar navbar-expand bg-dark" style="margin-left: 100px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed; margin-top: 13px;">
+        <a class="navbar-brand" href="/homepage"><h3 style="margin-left: 40px; color: #fc8019;"><b>FoodiePie</b></h3></a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb" style="color: white;">
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navb">
+          <!-- -->
+          <ul class="navbar-nav" style="margin-right: 50px; font-size: 16px; font-weight: 500; margin-left: 700px;"> 
+            <li class="nav-item">
+              <h4 type="button" class="btn" data-toggle="modal" data-target="#myModal" style="background-color: #343a40 !important; border-color: #343a40 !important; margin-right: 30px; color: white;">
+                <i class="fa fa-search"></i>
+              </h4>
+              <!-- The Modal -->
+            </li>
+            <li class="nav-item">
+              <div class="dropdown" style="text-align: center; align-content: center; height: 10px">
+                <a type="button" class="nav-link dropdown-toggle" data-toggle="dropdown" style="background-color: #343a40; color: white; margin-right: 30px; padding-top: 5px; margin-top: 5px">
+                  Hello! <%= user.userDetail.name %>
+                </a>
+                <div class="dropdown-menu" style="padding-top: 10px; margin-top: 30px">
+                  <span class="dropdown-item" style="cursor:pointer" onclick="openNav()">Your Account</span>
+                  <a class="dropdown-item" href="#">Your Orders</a>
+                  <a class="dropdown-item" href="/viewCart">Your Cart</a>
+                  <a class="dropdown-item" href="/logout">Log Out</a>
+                </div>
+              </div> 
+            </li>
+          <li class="nav-item" style="padding-top: 5px; margin-top: 5px"">
+            <a href="/viewCart" style="color: white; text-decoration: none;"><span style="color: white" class="cart" ><%= cart_num %></span><i class="fa fa-shopping-cart fa-lg"></i></a>
+          </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <br>
+    <br>
+    <div class="container" style="margin-top: 60px; margin-left: 150px; min-width: 1100px; max-width: 1100px; text-transform: capitalize;">
+      <div class="row" style="height: 80px; background-color: white; color: black">
+        <div class="mt-auto mb-auto" style="width: 180px;">Oid</div>
+        <div class="mt-auto mb-auto" style="width: 180px;">Restaurant</div>
+        <div class="mt-auto mb-auto" style="width: 360px;">Items</div>
+        <div class="mt-auto mb-auto" style="width: 180px;">Total</div>
+        <div class="mt-auto mb-auto" style="width: 180px;">Status</div>
+      </div>
+      <% for(var i=0; i < results.length; i++) { %>
+        <div class="row" style="height:auto; min-height: 50px; margin-top: 5px; margin-bottom: 5px; float: left; width: 1100px; background-color: inherit;">
+          <div class="mt-auto mb-auto " style="color: #343a40; width: 180px;" id="<%= results[i].oid %>"><%= results[i].oid %></div>
+          <div class="mt-auto mb-auto " style="color: #343a40; width: 180px;" id="<%= results[i].oid %>"><%= results[i].rname %></div>
+          <div class="mt-auto mb-auto" style="color: #343a40; width: 360px;">
+            <% for(var j=1; j <= Object.keys(results[i].orderDetail).length; j++) { %>
+              <p class="mt-auto mb-auto "><%= results[i].orderDetail[j].dishName %> * <%= results[i].orderDetail[j].quantity %> = <%= results[i].orderDetail[j].price %> * <%= results[i].orderDetail[j].quantity %></p>
+            <%}%>
+          </div>
+          <div class="mt-auto mb-auto" style="color: #343a40; width: 180px;"><%= (results[i].total*1.12 + 30).toFixed(2) %></div>
+          <div class="mt-auto mb-auto" style="color: #343a40; width: 180px;"><%= results[i].status %></div>
+        </div>
+        <hr style="color: black;">
+        <% } %>
+    </div>
+    <div class="modal" id="myModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Modal body -->
+          <div class="modal-body">
+            <form class="form-inline my-2 my-lg-0" action="/searchRestaurant" method="post">
+              <input class="form-control mr-sm-2" type="text" placeholder="Search For Restaurant Or Dishes" id="restaurantName" name="restaurantName" value="" style="width:400px; margin-left: 10px">
+              <button class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" id="searchByName">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="searchResult"></div>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+	<title>Order Food Online On Foodieie</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+	</script>
+	<style>
+	</style>
+  </head>
+  <body >
+    <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
+      <nav class="navbar navbar-expand bg-dark" style="margin-left: 100px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed;">
+        <a class="navbar-brand" href="/homepage"><h3 style="margin-left: 40px; margin-top: 10px; color: #fc8019;"><b>FoodiePie</b></h3></a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb" style="color: white;">
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navb">
+          <ul class="navbar-nav" style="margin-left: 750px; font-size: 16px;font-weight: 500;">
+            <li class="nav-item">
+              <div class="dropdown" style="text-align: center; align-content: center;">
+                <a type="button" class="nav-link dropdown-toggle" data-toggle="dropdown" style="background-color: #343a40; color: white; margin-right: 30px;">
+                  Hey! <%= user.userDetail.name %>
+                </a>
+                <div class="dropdown-menu" style="padding-top: 10px; margin-top: 30px">
+                  <span class="dropdown-item" style="cursor:pointer" onclick="openNav()">Your Account</span>
+                  <a class="dropdown-item" href="#">Your Orders</a>
+                  <a class="dropdown-item" href="/viewcart">Your Cart</a>
+                  <a class="dropdown-item" href="/logout">Log Out</a>
+                </div>
+              </div> 
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div style="margin-top: 250px; align-content: center;">
+      <div class="container" style="color: black; width: 500px; text-align: center;">
+        <h1 style="margin-top: 24px; font-size: 20px; font-weight: 600; color: #535665;">You haven't Ordered so far.</h1>
+        <p style="margin-top: 8px; color: #7e808c; font-weight: 300; font-size: 14px;">Order Now</p>
+        <button style="background-color: #fc8019"><strong><a href="/homepage" id="link" style="background-color: #fc8019; text-decoration: none; color: white">See restaurant Near you</a></strong></button>
+      </div>
+    </div>
+  </body>
+</html>

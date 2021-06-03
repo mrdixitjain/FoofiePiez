@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <title>Thanks</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    </script>
+    <style>
+      body 
+      {
+        /* background-image: url('bread.jpeg'); */
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: rgb(247, 247, 247);
+      }
+    </style>
+  </head>
+  <body style="text-transform: capitalize;">
+    <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
+      <nav class="navbar navbar-expand bg-dark" style="margin-left: 80px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed;">
+        <a class="navbar-brand" href="/homepage"><h3 style="margin-left: 40px; margin-top: 10px; color: #fc8019;"><b>FoodiePie</b></h3></a>
+      </nav>
+    </div>
+    <div style="margin-top: 250px;">
+      <div class="container" style="color: black; width: 500px; text-align: center;">
+        <h1 style="margin-top: 24px; font-size: 20px; font-weight: 600; color: #343a40;">Thank You</h1>
+        <p style="margin-top: 8px; color: #343a40; font-weight: 300; font-size: 14px;">Your order has been received.</p>
+        <p style="margin-top: 8px; color: #343a40; font-weight: 300; font-size: 14px;">And Will Be delivered to you shortly.</p>
+        <button style="background-color: #fc8019"><strong><a href="javascript:void(0)" id="link" style="background-color: #fc8019; color: white; text-decoration: none;">See restaurant Near you</a></strong></button>
+        <p style="margin-top: 8px; color: #343a40; font-weight: 300; font-size: 14px;">if not been redirected to dashboard within <span id="timer"></span></p>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var count = 5;
+      var redirect = "/homepage";
+      function countDown(){
+        var timer = document.getElementById("timer");
+        if(count > 0){
+            count--;
+            timer.innerHTML =count+" seconds.";
+            setTimeout("countDown()", 1000);
+        }
+        else{
+          document.getElementById("link").href="/homepage"
+          window.location.href = redirect;
+        }
+      }
+      countDown();
+    </script>
+  </body>
+</html>

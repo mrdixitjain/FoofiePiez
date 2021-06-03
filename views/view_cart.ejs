@@ -15,12 +15,12 @@
       background-image: url('img5.jpeg');
       background-repeat: no-repeat;
       background-size: cover;
-      /* background-color: rgb(247, 247, 247); */
+      background-color: rgb(247, 247, 247);
     }
   </style>
   <script type="text/javascript">
     function maxOrder(){
-      var redirect="/checkout"
+      var redirect="/checkout";
       if(<%= mayOrder %>){
         window.location.href = redirect;
       }

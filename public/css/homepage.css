@@ -31,6 +31,7 @@ body
     position: fixed;
     z-index: 1;
     margin-top: 65px;
+    top: 0;
     left: 0;
     background-color: inherit;
     overflow-x: hidden;
