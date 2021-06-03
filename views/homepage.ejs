@@ -136,11 +136,11 @@
     <div class="container" style="min-width: 1100px;">
       <div class="card-columns" style="column-count: 4;">
         <% for(var i=0; i < searchDetail.length; i++) { %>
-          <a href="/restaurant/<%= searchDetail[i].name %>" style="color: black;">
+          <a href="/restaurant/<%= searchDetail[i].rname %>" style="color: black;">
             <div class="card" id="card" style="width: 250px; margin-left: 20px; cursor: pointer;">
               <img src="https://res.cloudinary.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_508,h_320,c_fill/aylqjejobls1aobd0fun" class="card-img-top" alt="">
               <div class="card-body" >
-                <h5 class="card-title" class="restaurant" id="restaurant"><%= searchDetail[i].name %></h5>
+                <h5 class="card-title" class="restaurant" id="restaurant"><%= searchDetail[i].rname %></h5>
                 <p class="card-text"><p><%= searchDetail[i].type %></p><p>Cost For Two : <%= searchDetail[i].cost %></p></p>
               </div>
             </div>

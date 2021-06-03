@@ -125,6 +125,7 @@ app.route('/user-signup')
           con.query(sql, [uid, name, phone, email, password, answer], function(err, results, fields)
           {
             if (err) {
+              console.log("SQL error in /user_signup")
               console.log(err);
               res.redirect("/user-signup");
               res.end();
@@ -192,7 +193,66 @@ app.route('/user-forgot-password')
   });
 
 router.get('/homepage', (req, res) => {
+  // var sql1 = "CREATE TABLE order ( oid varchar(20) );";
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
 
+  // sql1 = `ALTER TABLE order
+  //         ADD uid varchar(20);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `ALTER TABLE order
+  //         ADD rid varchar(20);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `ALTER TABLE order 
+  //         ADD status varchar(255);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `ALTER TABLE order 
+  //         ADD PRIMARY KEY (oid);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `ALTER TABLE order 
+  //         ADD FOREIGN KEY (uid) REFERENCES user(uid);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `ALTER TABLE order 
+  //         ADD FOREIGN KEY (rid) REFERENCES restaurant(rid);`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
+
+  // sql1 = `CREATE TABLE oitems (
+  //   oid varchar(20),
+  //   did varchar(20),
+  //   quantity int,
+  //   PRIMARY KEY (oid, did),
+  //   FOREIGN KEY (oid) REFERENCES order (oid),
+  //   FOREIGN KEY (did) REFERENCES dish (did)
+  // );`;
+  // con.query(sql1, (err, results) => {
+  //   if (err) throw err;
+  //   console.log(results);
+  // });
   req.session.location = "malaviya nagar";
   req.session.city = 'jaipur';
   if (!req.session.cart_num) {
@@ -268,7 +328,7 @@ router.route('/restaurant-signup')
 
     // sql = `CREATE TABLE restaurant (
     //   rid varchar(20),
-    //   name varchar(255),
+    //   rname varchar(255),
     //   phone varchar(20),
     //   email varchar(255),
     //   password varchar(255),
@@ -285,7 +345,6 @@ router.route('/restaurant-signup')
       WHERE phone=? OR email=?;`;
 
     con.query(sql, [phone, email], (err, results)=>{
-      console.log(results);
       if(results.length>0) {
         res.render('restaurant_signup', {attempt: 1, signedup : 0})
       }
@@ -307,10 +366,6 @@ router.route('/restaurant-signup')
 
 app.route('/restaurant-signin')
   .get((req,res) => {
-    let sql = "SELECT * FROM restaurant;";
-    con.query(sql, (err, results) => {
-      console.log(results);
-    });
     res.render('restaurant_signin', {attempt: 0, wrongField: ""});
   })
   .post((req, res) => {
@@ -333,7 +388,7 @@ app.route('/restaurant-signin')
         let pass = req.body.password;
         let objects = {};
         res.set('Access-Control-Allow-Origin','*');
-        sql = `SELECT r.name rname, r.rid, d.name, d.price, d.quantity 
+        sql = `SELECT r.rname, r.rid, d.name, d.price, d.quantity 
           FROM restaurant r LEFT JOIN dish d ON d.rid = r.rid WHERE r.email = ? and r.password = ?;`;
 
         con.query(sql, [email, pass], (err, results) => {
@@ -508,7 +563,7 @@ app.get("/restaurant/:id", (req, res)=>{
     user.userDetail = req.session.userDetail;
 	}
 	var restaurant=req.params.id;
-	var sql="SELECT * FROM dish WHERE rid in (SELECT rid FROM restaurant WHERE name = ?);";
+	var sql="SELECT * FROM dish WHERE rid in (SELECT rid FROM restaurant WHERE rname = ?);";
 	con.query(sql, [restaurant], (err, results)=>{
 		if(err) {
       console.log("SQL error in /restaurant/:id.");
@@ -751,57 +806,166 @@ app.route('/viewCart')
         user.signed_in = true;
         user.userDetail = req.session.userDetail;
       }
-      var a= async function() {
-        var uid=store.userDetail['uid'];
-        var c = await function(){
-          console.log(uid+"in cart")
-          let sql = `SELECT distinct c.name AS name, c.quantity, c.price, r.name as restaurantName,
-                      r.rid as rid FROM cart c INNER JOIN 
-          select distinct c.name as name, c.quantity, c.price, 
-          r.name as restaurantName, r.rid as rid from cart c inner join restaurants r on c.rid=r.rid where uid=?;`	;			
+      var a = async function() {
+        var uid = req.session.uid;
+        var c = await function() {
+          let sql = `SELECT * FROM restaurant r left join dish d 
+                    on r.rid = d.rid LEFT JOIN cart c 
+                    on c.rid = r.rid 
+                    where d.did = c.did;`;
+          // let sql = `SELECT distinct c.name AS name, c.quantity, c.price, r.name as restaurantName,
+          //             r.rid as rid FROM cart c INNER JOIN 
+          // select distinct c.name as name, c.quantity, c.price, 
+          // r.name as restaurantName, r.rid as rid from cart c inner join restaurants r on c.rid=r.rid where uid=?;`	;	
+          		
           con.query(sql, [uid], function(err, results, fields) {
-            console.log(results);
             if(results.length==0){
               res.render('cart-is-empty', {user: user});
             }
             else {
-              console.log('hello');
-              var cartTotal=0;
-              for(var i=0; i<results.length; i++){
-                cartTotal=cartTotal+results[i].price*results[i].quantity;
+              var cartTotal = 0;
+              for(var i = 0; i < results.length; i++){
+                cartTotal = cartTotal + parseFloat(results[i].price) * results[i].quantity;
               }
-              console.log('in cart');
-              store['cartTotal']=cartTotal.toFixed(2);
-              store['cartDetail']=results;
-              store['rid']=results[0].rid;
-              res.render('viewCart', {
+              req.session.cartTotal = cartTotal.toFixed(2);
+              req.session.cartDetail = results;
+              req.session.rid = results[0].rid;
+              res.render('view_cart', {
                           user: user, 
                           cartDetail: results, 
                           cartTotal: cartTotal, 
-                          mayOrder: store.mayOrder
+                          // mayOrder: store.mayOrder
+                          mayOrder: true
                         }
               );
             }
           });
         }
-
         var b = await function() {
-          let sql = `SELECT * FROM orders where uid=? and status='ongoing;`;
-          con.query(sql, [uid], (err, results,) => {
+          let sql = `SELECT * FROM orders WHERE uid=? and status='ongoing';`;
+          con.query(sql, [uid], (err, results) => {
             if(results.length >= 2) {
-              store['mayOrder']=false;
+              req.session.mayOrder = false;
             }
             else {
-              store['mayOrder']=true;
+              req.session.mayOrder = true;
             }
-            console.log(results);
-            console.log(store.mayOrder);
             c();
           });
         }
-        await b();				
+        await c();				
       }
       a();
-    })
+    });
+
+app.route("/cart-increment")
+  .post((req, res) => {
+    var did = req.body.id;
+    var uid = req.session.uid;
+    let sql = `UPDATE cart
+              SET quantity = quantity + 1
+              WHERE uid = ? AND did = ?;`;
+    con.query(sql, [uid, did], (err, results) => {
+      if (err) {
+        console.log("SQL error in /cart-increment");
+        console.log(err);
+        res.send("error");
+      }
+      else {
+            req.session.cart_num += 1;
+            res.send("done");
+      }
+    });
+  });
+
+  app.route("/cart-decrement")
+  .post((req, res) => {
+    var did = req.body.id;
+    var uid = req.session.uid;
+    let sql = `SELECT quantity FROM cart
+              WHERE uid = ? AND did = ?;`;
+    con.query(sql, [uid, did], (err, results) => {
+      if (err) {
+        console.log("SQL error in /cart-increment");
+        console.log(err);
+        res.send("error");
+      }
+      else if (results[0].quantity == 1) {
+        sql = `DELETE FROM cart
+              WHERE uid = ? AND did = ?;`;
+        con.query(sql, [uid, did], (err, results) => {
+          if (err) {
+            console.log("SQL error in /cart-increment2");
+            console.log(err);
+            res.send("error");
+          }
+          else {
+            req.session.cart_num -= 1;
+            res.send("done");
+          }
+        });
+      }
+      else {
+        sql = `UPDATE cart
+              SET quantity = quantity - 1
+              WHERE uid = ? AND did = ?;`;
+        con.query(sql, [uid, did], (err, results) => {
+          if (err) {
+            console.log("SQL error in /cart-increment3");
+            console.log(err);
+            res.send("error");
+          }
+          else {
+            req.session.cart_num -= 1;
+            res.send("done");
+          }
+        });
+      }
+    });
+  });
+
+  app.route("/cart-deletion")
+  .post((req, res) => {
+    var did = req.body.id;
+    var uid = req.session.uid;
+    let sql = `SELECT quantity FROM cart
+              WHERE uid = ? AND did = ?;`;
+    con.query(sql, [uid, did], (err, results) => {
+      if (err) {
+        console.log("SQL error in /cart-deletion");
+        console.log(err);
+        res.send("error");
+      }
+      else {
+        sql = `DELETE FROM cart
+              WHERE uid = ? AND did = ?;`;
+        con.query(sql, [uid, did], (err, result) => {
+          if (err) {
+            console.log("SQL error in /cart-deletion2");
+            console.log(err);
+            res.send("error");
+          }
+          else {
+            req.session.cart_num -= results[0].quantity;
+            res.send("done");
+          }
+        });
+      }
+    });
+  });
+
+app.route("/checkout")
+	.get((req, res, next)=>{
+		if(!('cartTotal' in req.session) || !req.session.email) {
+			req.session.redirectTo="/viewCart";
+			res.redirect("/user-signin");
+			res.end();
+		}
+		else{
+			next();
+		}
+	}, (req, res) => {
+		res.render("checkout", {cartTotal: req.session.cartTotal*1.12+30})
+	});
 
 app.listen(8080, () => console.log(`App started on port 8080`)); 
