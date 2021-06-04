@@ -958,7 +958,45 @@ app.route("/checkout")
 			await a();
 		}
 		d();
-		
+	});
+
+app.route('/searchRestaurant')
+	.get((req, res) => {
+		res.redirect("/homepage");
 	})
+	.post((req, res) => {
+    var user={userDetail: {}, signed_in: false, search: false};
+    if(req.session.email){
+      user.signed_in = true;
+      user.userDetail = req.session.userDetail;
+    }
+    if(req.body.restaurantName == "") {
+      res.redirect('/homepage');
+    }
+    else {
+      let restaurantName = req.body.restaurantName;
+      var sql = `SELECT * FROM restaurant WHERE rname RLIKE ?
+                  OR rid IN (SELECT rid FROM dish WHERE name RLIKE ?);`;
+      var a = async function(){
+        con.query(sql, [restaurantName, restaurantName], function(err, results, fields) {
+          if (err) {
+            console.log("SQL error in /searchRestaurant");
+            console.log(err);
+            res.redirect("/homepage");
+          }
+          else {
+            res.render("homepage", {
+                                  user:user, 
+                                  searchDetail:results, 
+                                  location: req.session.location,
+                                  cart_num: req.session.cart_num,
+                                  updateFailed: 2
+                                });
+          }          
+        });
+      }
+      a();
+    }
+  });
 
 app.listen(8080, () => console.log(`App started on port 8080`)); 
