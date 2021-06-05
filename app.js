@@ -29,7 +29,7 @@ store = {};
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "dixit@1#$23",
+  password: "",
   database: 'myProject',
 });
 
