@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <title>Pending Orders</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/javascripts/sidenav.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/sidenav.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    </script>
+    <style>
+    </style>
+  </head>
+  <body >
+    <div id="mySidenav" class="sidenav" style="background-color: #e9e9e9;">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="color: black;">&times;</a>
+      <!-- <br> -->
+      <label for="uname"><b>Restaurant Name:</b></label>
+      <br>
+      <div style=" margin-left: 5px;"><b><%= restaurant.detail.name %></b></div>
+      <hr>
+      <label for="uname"><b>Phone:</b></label>
+      <br>
+      <div style=" margin-left: 5px;"><b><%= restaurant.detail.phone %></b></div>
+      <hr>
+      <label for="uname"><b>Email:</b></label>
+      <br>
+      <div style=" margin-left: 5px; text-transform: lowercase;"><b><%= restaurant.detail.email %></b></div>
+      <hr>
+      <b><span class="navbar-toggler navbar-toggler-right" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 70px; margin-top: 30px;" onclick="openNavUpdate() ">Edit Profile</span></b>
+    </div>
+    
+    <div id="updateProfile" class="updateProfile" style="background-color: #e9e9e9;">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNavUpdate()" style="color: black;">&times;</a>        
+      <form action="/update-profile" method="post">
+        <label for="uname"><b>Email:</b></label>
+        <br>
+        <input type="email" name="email" value="<%= restaurant.detail.email %>" required>
+        <hr>
+        <label for="uname"><b>Phone:</b></label>
+        <br>
+        <input type="text" name="phone" value="<%= restaurant.detail.phone %>" required>
+        <hr>
+        <label for="uname"><b>Password:</b></label>
+        <br>
+        <input type="password" name="password" value="<%= restaurant.detail.password %>" required>
+        <hr>
+        <b><button class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 100px; margin-top: 30px; text-align: center;">Update</button></b>
+      </form>
+    </div>
+    <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
+      <nav class="navbar navbar-expand bg-dark" style="margin-left: 100px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed;">
+        <a class="navbar-brand" href="/restaurant-homepage"><h3 style="margin-left: 40px; margin-top: 10px; color: #fc8019;"><b>FoodiePie</b></h3></a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb" style="color: white;">
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navb">
+          <ul class="navbar-nav" style="margin-left: 750px; font-size: 16px;font-weight: 500;">
+            <li class="nav-item">
+              <div class="dropdown" style="text-align: center; align-content: center;">
+                <a type="button" class="nav-link dropdown-toggle" data-toggle="dropdown" style="background-color: #343a40; color: white; margin-right: 30px;">
+                  Hey! <%= restaurant.detail.name %>
+                </a>
+                <div class="dropdown-menu" style="padding-top: 10px; margin-top: 30px">
+                  <span class="dropdown-item" style="cursor:pointer" onclick="openNav()">Your Account</span>
+                  <a class="dropdown-item" href="/all-orders">Your Orders</a>
+                  <!-- <a class="dropdown-item" href="/viewcart">Your Cart</a> -->
+                  <a class="dropdown-item" href="/logout">Log Out</a>
+                </div>
+              </div> 
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div style="margin-top: 300px; align-content: center;">
+      <div class="container" style="color: black; width: 500px; text-align: center;">
+        <h1 style="margin-top: 24px; font-size: 20px; font-weight: 600; color: #535665;">You have no Orders.</h1>
+        <button style="background-color: #fc8019"><strong><a href="/restaurant-homepage" id="link" style="background-color: #fc8019; text-decoration: none; color: white">Go to Homepage</a></strong></button>
+      </div>
+    </div>
+  </body>
+</html>

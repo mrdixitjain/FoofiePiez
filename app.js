@@ -42,8 +42,12 @@ con.connect(function(err){
 app.use('/',router);
 
 router.get('/', (req, res) => {
-  // res.redirect("/homepage");
-  res.sendFile(path.join(__dirname, '/views/firstpage.html'));
+  if (!req.session.location || !req.session.city || req.session.location=="" || req.session.city=="") {
+    res.sendFile(path.join(__dirname, '/views/firstpage.html'));
+  }
+  else {
+    res.redirect("/homepage");
+  }
 });
 
 app.route("/user-signin")
@@ -347,6 +351,9 @@ app.route('/restaurant-signin')
         req.session.usertype = 'restaurant';
         req.session.rid = results[0].rid;
         req.session.rname = results[0].rname;
+        req.session.email = results[0].email;
+        req.session.phone = results[0].phone;
+        req.session.password = results[0].password;
         res.redirect("/restaurant-homepage");
       }
       else {
@@ -386,6 +393,12 @@ app.route("/restaurant-homepage")
             objects = {};
             objects.rid = rid;
             objects.rname = rname;
+            let restaurant = {detail: {
+                                    name : req.session.rname,
+                                    phone : req.session.phone,
+                                    email : req.session.email,
+                                    password : req.session.password,
+                                  }};
             objects.dishes = [];
             let arr = [];
             
@@ -394,8 +407,13 @@ app.route("/restaurant-homepage")
             });
             objects.dishes = arr;
 
-            var send = async()=>{
-              res.render('restaurant_homepage', {objects: objects});
+            var send = async() => {
+              let updateFailed = req.session.updateFailed;
+              req.session.updateFailed = 2;
+              res.render('restaurant_homepage', {objects: objects, 
+                                                  restaurant: restaurant,
+                                                  updateFailed: updateFailed
+                                                });
             }
             send();
           }
@@ -411,37 +429,175 @@ app.route("/pending-orders")
     }
     else {
       let rid = req.session.rid;
+      let restaurant = {detail: {
+        name : req.session.rname,
+        phone : req.session.phone,
+        email : req.session.email,
+        password : req.session.password,
+      }};
+
       let sql = `SELECT * FROM (SELECT o.*, r.rname FROM orders o LEFT JOIN restaurant r
         ON o.rid = r.rid where r.rid = ?) as tbl LEFT JOIN oitems on
-        tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did;`;
+        tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did 
+        WHERE tbl.status != 'delivered' 
+          AND tbl.status != 'cancelled by restaurant' 
+          AND tbl.status != 'cancelled by user' ORDER BY tbl.oid DESC;`;
       con.query(sql, [rid], (err, results) => {
         if (err) {
           console.log("MYSQL error in /pending-orders");
           console.log(err);
           res.redirect("/restaurant-homepage");
         }
+        else if(results.length == 0) {
+          res.render("no-pending-order", {restaurant: restaurant});
+        }
         else {
-          var i=0;
-          while(i < results.length){
-            results[i].orderDetail = {1: {dishName: results[i].name, volume: results[i].volume, quantity: results[i].quantity, price: results[i].price}};
-            results[i].total = results[i].quantity * parseFloat(results[i].price);
-            delete results[i].dishName;
-            delete results[i].quantity;
-            delete results[i].price;
-            var j = i+1;
-            var k = 2;
-            while(j < results.length && results[j].oid == results[i].oid) {
-              results[i].orderDetail[k] = {dishName: results[j].name, quantity: results[j].quantity, price: results[j].price, volume: results[j].volume};
-              results[i].total += results[j].quantity * parseFloat(results[j].price);
-              results.splice(j, j+1);
-              k += 1;
+          var i = 0;
+          var j = 0;
+          ans = []
+          ans.push({
+                    oid : results[i].oid,
+                    rid : results[i].rid,
+                    uid : results[i].uid,
+                    status : results[i].status,
+                    address : results[i].address,
+                    paymentMethod : results[i].paymentMethod,
+                    rname : results[i].rname
+          });
+          ans[j].orderDetail = {1: {
+                                    dishName: results[i].name, 
+                                    volume: results[i].volume, 
+                                    quantity: results[i].quantity, 
+                                    price: results[i].price,
+                                    did : results[i].did
+                                  }};
+          ans[j].total = results[i].quantity * parseFloat(results[i].price);
+          i += 1;
+          while(i < results.length) {
+            if (results[i].oid == ans[j].oid) {
+              ans[j].orderDetail[Object.keys(ans[j].orderDetail).length + 1] = {
+                                            dishName: results[i].name, 
+                                            quantity: results[i].quantity, 
+                                            price: results[i].price, 
+                                            volume: results[i].volume,
+                                            did : results[i].did
+                                          };
+              ans[j].total += results[i].quantity * parseFloat(results[i].price);
+              i += 1;
             }
-            results[i].total = results[i].total.toFixed(2);
-            i++;
+            else {
+              ans[j].total = ans[j].total.toFixed(2);
+              j += 1;
+              ans.push({
+                        oid : results[i].oid,
+                        rid : results[i].rid,
+                        uid : results[i].uid,
+                        status : results[i].status,
+                        address : results[i].address,
+                        paymentMethod : results[i].paymentMethod,
+                        rname : results[i].rname
+              });
+              ans[j].orderDetail = {1: {
+                                        dishName: results[i].name, 
+                                        volume: results[i].volume, 
+                                        quantity: results[i].quantity, 
+                                        price: results[i].price,
+                                        did : results[i].did
+                                      }};
+              ans[j].total = results[i].quantity * parseFloat(results[i].price);
+              i += 1;
+            }
           }
-          console.log(results);
-          console.log(results[0].orderDetail);
-          res.render("pending-orders", {results : results});
+          res.render("pending-orders", {results : ans, restaurant: restaurant, title: "Pending orders"});
+        }
+      });
+    }
+  });
+
+  app.route("/all-orders")
+  .get((req, res) => {
+    if (req.session.usertype != 'restaurant' || !req.session.rid) {
+      res.redirect("/restaurant-signin");
+    }
+    else {
+      let rid = req.session.rid;
+      let restaurant = {detail: {
+        name : req.session.rname,
+        phone : req.session.phone,
+        email : req.session.email,
+        password : req.session.password,
+      }};
+
+      let sql = `SELECT * FROM (SELECT o.*, r.rname FROM orders o LEFT JOIN restaurant r
+        ON o.rid = r.rid where r.rid = ?) as tbl LEFT JOIN oitems on
+        tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did ORDER BY tbl.oid DESC`;
+      con.query(sql, [rid], (err, results) => {
+        if (err) {
+          console.log("MYSQL error in /pending-orders");
+          console.log(err);
+          res.redirect("/restaurant-homepage");
+        }
+        else if(results.length == 0) {
+          res.render("no-pending-order", {restaurant: restaurant});
+        }
+        else {
+          var i = 0;
+          var j = 0;
+          ans = [];
+          ans.push({
+                    oid : results[i].oid,
+                    rid : results[i].rid,
+                    uid : results[i].uid,
+                    status : results[i].status,
+                    address : results[i].address,
+                    paymentMethod : results[i].paymentMethod,
+                    rname : results[i].rname
+          });
+          ans[j].orderDetail = {1: {
+                                    dishName: results[i].name, 
+                                    volume: results[i].volume, 
+                                    quantity: results[i].quantity, 
+                                    price: results[i].price,
+                                    did : results[i].did
+                                  }};
+          ans[j].total = results[i].quantity * parseFloat(results[i].price);
+          i += 1;
+          while(i < results.length) {
+            if (results[i].oid == ans[j].oid) {
+              ans[j].orderDetail[Object.keys(ans[j].orderDetail).length + 1] = {
+                                            dishName: results[i].name, 
+                                            quantity: results[i].quantity, 
+                                            price: results[i].price, 
+                                            volume: results[i].volume,
+                                            did : results[i].did
+                                          };
+              ans[j].total += results[i].quantity * parseFloat(results[i].price);
+              i += 1;
+            }
+            else {
+              ans[j].total = ans[j].total.toFixed(2);
+              j += 1;
+              ans.push({
+                        oid : results[i].oid,
+                        rid : results[i].rid,
+                        uid : results[i].uid,
+                        status : results[i].status,
+                        address : results[i].address,
+                        paymentMethod : results[i].paymentMethod,
+                        rname : results[i].rname
+              });
+              ans[j].orderDetail = {1: {
+                                        dishName: results[i].name, 
+                                        volume: results[i].volume, 
+                                        quantity: results[i].quantity, 
+                                        price: results[i].price,
+                                        did : results[i].did
+                                      }};
+              ans[j].total = results[i].quantity * parseFloat(results[i].price);
+              i += 1;
+            }
+          }
+          res.render("pending-orders", {results : ans, restaurant: restaurant, title: "All orders"});
         }
       });
     }
@@ -629,21 +785,33 @@ app.post('/update-profile', (req, res)=> {
   let email = req.body.email;
   let pass = req.body.password;
   let phone = req.body.phone;
-  let uid = req.session.uid;
+  let id;
+  let sql;
+  let str;
+  if (req.session.usertype == 'restaurant') {
+    sql = `UPDATE restaurant SET email=?, password=?, phone=? WHERE rid=?;`;
+    id = req.session.rid;
+    str = "/restaurant-homepage";
+  }
+  else {
+    sql = 'UPDATE user SET email=?, password=?, phone=? WHERE uid=?;';
+    id = req.session.uid;
+    str = "/homepage"
+  }
 
-	con.query('UPDATE user SET email=?, password=?, phone=? WHERE uid=?', [email, pass, phone, uid], (err, results)=>{
+	con.query(sql, [email, pass, phone, id], (err, results)=>{
 		if(err){
 			console.log('Error while updating');
       console.log(err);
 			req.session.updateFailed = 1;
-			res.redirect('/homepage');
+			res.redirect(str);
 		}
 		else{
 			req.session.updateFailed = 0;
       req.session.phone = phone;
       req.session.email = email;
       req.session.password = pass;
-			res.redirect('/homepage');
+			res.redirect(str);
 		}
 	})
 });
@@ -733,7 +901,7 @@ app.route('/orders')
       var ans="";
       let sql = `SELECT * FROM (SELECT o.*, r.rname FROM orders o LEFT JOIN restaurant r
                   ON o.rid = r.rid where o.uid = ?) as tbl LEFT JOIN oitems on
-                  tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did;`;
+                  tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did ORDER BY tbl.oid DESC;`;
       con.query(sql, [uid], (err, results) => {
         if (err) {
           console.log("SQL error in /orders");
@@ -745,23 +913,63 @@ app.route('/orders')
           res.render('no-orders', {user: user})
         }
         else {
-          var i=0;
-          while(i < results.length){
-            results[i].orderDetail = {1: {dishName: results[i].name, quantity: results[i].quantity, price: results[i].price}};
-            results[i].total = results[i].quantity * parseFloat(results[i].price);
-            delete results[i].dishName;
-            delete results[i].quantity;
-            delete results[i].price;
-            var j = i+1;
-            var k = 2;
-            while(j < results.length && results[j].oid == results[i].oid) {
-              results[i].orderDetail[2] = {dishName: results[j].name, quantity: results[j].quantity, price: results[j].price};
-              results[i].total += results[j].quantity * parseFloat(results[j].price);
-              results.splice(j, j+1);
+          var i = 0;
+          var j = 0;
+          ans = []
+          ans.push({
+                    oid : results[i].oid,
+                    rid : results[i].rid,
+                    uid : results[i].uid,
+                    status : results[i].status,
+                    address : results[i].address,
+                    paymentMethod : results[i].paymentMethod,
+                    rname : results[i].rname
+          });
+          ans[j].orderDetail = {1: {
+                                    dishName: results[i].name, 
+                                    volume: results[i].volume, 
+                                    quantity: results[i].quantity, 
+                                    price: results[i].price,
+                                    did : results[i].did
+                                  }};
+          ans[j].total = results[i].quantity * parseFloat(results[i].price);
+          i += 1;
+          while(i < results.length) {
+            if (results[i].oid == ans[j].oid) {
+              ans[j].orderDetail[Object.keys(ans[j].orderDetail).length + 1] = {
+                                            dishName: results[i].name, 
+                                            quantity: results[i].quantity, 
+                                            price: results[i].price, 
+                                            volume: results[i].volume,
+                                            did : results[i].did
+                                          };
+              ans[j].total += results[i].quantity * parseFloat(results[i].price);
+              i += 1;
             }
-            i++;
+            else {
+              ans[j].total = ans[j].total.toFixed(2);
+              j += 1;
+              ans.push({
+                        oid : results[i].oid,
+                        rid : results[i].rid,
+                        uid : results[i].uid,
+                        status : results[i].status,
+                        address : results[i].address,
+                        paymentMethod : results[i].paymentMethod,
+                        rname : results[i].rname
+              });
+              ans[j].orderDetail = {1: {
+                                        dishName: results[i].name, 
+                                        volume: results[i].volume, 
+                                        quantity: results[i].quantity, 
+                                        price: results[i].price,
+                                        did : results[i].did
+                                      }};
+              ans[j].total = results[i].quantity * parseFloat(results[i].price);
+              i += 1;
+            }
           }
-          res.render('prev-orders', {results: results, user: user, cart_num: req.session.cart_num, updateFailed: 2});
+          res.render('prev-orders', {results: ans, user: user, cart_num: req.session.cart_num, updateFailed: 2});
           }
         }
       )
@@ -1107,13 +1315,13 @@ app.route("/checkout")
 				})
 			}
 			var a= await function(){
-				var sql = "SELECT * FROM orders;";
+				var sql = "SELECT MAX(oid) as oid FROM orders;";
 				con.query(sql, (err, results)=>{
 					if (err) {
             console.log("SQL error in /placeorder 1");
             res.redirect("/checkout");
           }
-					oid = results.length+1;
+					oid = parseInt(results[0].oid)+1;
 					console.log('order place query1 done');
 					b();
 				});

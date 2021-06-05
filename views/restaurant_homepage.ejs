@@ -5,6 +5,8 @@
 		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/app.css">
+    <script type="text/javascript" src="/javascripts/sidenav.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/sidenav.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -16,46 +18,123 @@
         background-color: rgb(227, 227, 227);
         text-transform: capitalize;
 			}
+      .col-md3 {
+        flex: 0 0 25%;
+        width: 300px;
+      }
+      .row {
+        margin-left: 0;
+      }
 		</style>
+    <script>
+      $(document).ready(function(){
+        <% if(updateFailed == 1){%>
+          alert('Update Failed. Either server issue or this Email or Phone is being used by other user.');
+          <%}
+          else if(updateFailed == 0){%>
+            alert('Update done');
+          <%}
+        %>
+      });
+    </script>
 	</head>
 	<body>
-		<div class="main">
-			<h1  style="margin-left: 13px;" id="<%= objects.rid %>"><%= objects.rname %></h1>
+    <div id="mySidenav" class="sidenav" style="background-color: #e9e9e9;">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="color: black;">&times;</a>
+      <!-- <br> -->
+      <label for="uname"><b>Restaurant Name:</b></label>
       <br>
-			<div class="row col-md-9" style="margin-left: 3px;">					
+      <div style=" margin-left: 5px;"><b><%= restaurant.detail.name %></b></div>
+      <hr>
+      <label for="uname"><b>Phone:</b></label>
+      <br>
+      <div style=" margin-left: 5px;"><b><%= restaurant.detail.phone %></b></div>
+      <hr>
+      <label for="uname"><b>Email:</b></label>
+      <br>
+      <div style=" margin-left: 5px; text-transform: lowercase;"><b><%= restaurant.detail.email %></b></div>
+      <hr>
+      <b><span class="navbar-toggler navbar-toggler-right" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 70px; margin-top: 30px;" onclick="openNavUpdate() ">Edit Profile</span></b>
+    </div>
+    
+    <div id="updateProfile" class="updateProfile" style="background-color: #e9e9e9;">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNavUpdate()" style="color: black;">&times;</a>        
+      <form action="/update-profile" method="post">
+        <label for="uname"><b>Email:</b></label>
+        <br>
+        <input type="email" name="email" value="<%= restaurant.detail.email %>" required>
+        <hr>
+        <label for="uname"><b>Phone:</b></label>
+        <br>
+        <input type="text" name="phone" value="<%= restaurant.detail.phone %>" required>
+        <hr>
+        <label for="uname"><b>Password:</b></label>
+        <br>
+        <input type="password" name="password" value="<%= restaurant.detail.password %>" required>
+        <hr>
+        <b><button class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 100px; margin-top: 30px; text-align: center;">Update</button></b>
+      </form>
+    </div>
+    <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
+      <nav class="navbar navbar-expand bg-dark" style="margin-left: 100px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed;">
+        <a class="navbar-brand" href="/restaurant-homepage"><h3 style="margin-left: 40px; margin-top: 10px; color: #fc8019;"><b>FoodiePie</b></h3></a>
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb" style="color: white;">
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navb">
+          <ul class="navbar-nav" style="margin-left: 750px; font-size: 16px;font-weight: 500;">
+            <li class="nav-item">
+              <div class="dropdown" style="text-align: center; align-content: center;">
+                <a type="button" class="nav-link dropdown-toggle" data-toggle="dropdown" style="background-color: #343a40; color: white; margin-right: 30px;">
+                  Hey! <%= restaurant.detail.name %>
+                </a>
+                <div class="dropdown-menu" style="padding-top: 10px; margin-top: 30px">
+                  <span class="dropdown-item" style="cursor:pointer" onclick="openNav()">Your Account</span>
+                  <a class="dropdown-item" href="/all-orders">Your Orders</a>
+                  <!-- <a class="dropdown-item" href="/viewcart">Your Cart</a> -->
+                  <a class="dropdown-item" href="/logout">Log Out</a>
+                </div>
+              </div> 
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+		<div class="container" style="margin-top: 30px; width: 1500px;">
+			<h1 id="<%= objects.rid %>" style="margin-left: 0;"><%= objects.rname %></h1>
+      <br>
+			<div class="row" style="">					
         <div class="row form-group ">
-          <div class="col-md-3">
-            <input type="text" class="form-control c"  name="dishes" placeholder="Dish" id="aa">
+          <div class="col-md3">
+            <input type="text" class="form-control c"  name="dishes" placeholder="Dish" id="aa" required>
           </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control c" name="quantity" placeholder="Dish-Quantity" id="ab">
+          <div class="col-md3">
+            <input type="text" class="form-control c" name="quantity" placeholder="Dish-Quantity" id="ab" required>
           </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control c" name="price" placeholder="Dish-Price" id="ac">
+          <div class="col-md3">
+            <input type="text" class="form-control c" name="price" placeholder="Dish-Price" id="ac" required>
           </div>
-          <div class="col-md-3">
-            <button class="btn btn-primary"  id="ac" style="color: white;border-color: black;">Add</button>
-            <button class="btn btn-primary"  id="ad" style="color: white;border-color: black;">Logout</button>
-            <br>
-            <form id="myform" method="post" action="/pending-orders">
+          <div class="col-md3">
+            <button class="btn btn-primary"  id="ac" style="color: white; border-color: black; margin-left: 20px;">Add</button>
+            <form id="myform" method="post" action="/pending-orders" style="display: inline;">
               <input type="hidden" name="name" value="value" /> 
-              <button onclick="document.getElementById('myform').submit();">Pending Orders</button>
+              <button class="btn btn-primary" style="color: white; border-color: black;" onclick="document.getElementById('myform').submit();">Pending Orders</button>
             </form>
           </div>    
         </div>					
       </div>
-			<div class="data col-md-9 ">
+			<div class="data ">
 				<div class="row pl-auto pr-auto" style="height: 50px; color: black; background-color: white; font-size: large;">
-					<div class="col-md-3 mt-auto mb-auto c">Dish</div>
-					<div class="col-md-3 mt-auto mb-auto c">Volume</div>
-          <div class="col-md-3 mt-auto mb-auto c">Price</div>
+					<div class="col-md3 mt-auto mb-auto c">Dish</div>
+					<div class="col-md3 mt-auto mb-auto c">Volume</div>
+          <div class="col-md3 mt-auto mb-auto c">Price</div>
 					<div class="col-md-2 mt-auto mb-auto c">Actions</div>
 				</div>				
 				<% for(var i = 0;i < objects.dishes.length; i++) { %>
           <div class="row mt-2" id="<%= objects.dishes[i].dish%>">
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].dish%>" id="<%= objects.dishes[i].did%>1" style="color: #212529" disabled></div>
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].volume%>" id="<%= objects.dishes[i].did%>12" ></div>	
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="number" class="c t" value="<%=objects.dishes[i].price%>" id="<%= objects.dishes[i].did%>123"></div>					
+            <div class="col-md3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].dish%>" id="<%= objects.dishes[i].did%>1" style="color: #212529" disabled></div>
+            <div class="col-md3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].volume%>" id="<%= objects.dishes[i].did%>12" ></div>	
+            <div class="col-md3 mt-auto mb-auto c" ><input type="number" class="c t" value="<%=objects.dishes[i].price%>" id="<%= objects.dishes[i].did%>123"></div>					
             <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info remove" id="<%= objects.dishes[i].did%>"><i class="fa fa-minus fa-lg remove" ></i></button></div> 
             <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info update" id="<%= objects.dishes[i].did%>1234" type="submit">Update</button></div> 					
           </div>
