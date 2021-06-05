@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="css/homepage.css">
+    <script type="text/javascript" src="/javascripts/sidenav.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/sidenav.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -173,7 +175,6 @@
           <%}
         %>
       });
-
       var input = document.getElementById("location");
       input.addEventListener("keyup", function(event) {
         if (event.keyCode === 13) {
@@ -181,30 +182,6 @@
           document.getElementById("locationButton").submit();
         }
       });
-
-      function openNav() {
-        // document.getElementById("updateProfile").style.width = "0";
-        // document.getElementById("mySidenav").style.width = "280px";
-        document.getElementById("updateProfile").style.display = "none";
-        document.getElementById("mySidenav").style.display = "block";
-      }
-
-      function closeNav() {
-        // document.getElementById("mySidenav").style.width = "0";
-        document.getElementById("mySidenav").style.display = "none";
-      }
-
-      function openNavUpdate() {
-        // document.getElementById("mySidenav").style.width = "0";
-        // document.getElementById("updateProfile").style.width = "280px";
-        document.getElementById("mySidenav").style.display = "none";
-        document.getElementById("updateProfile").style.display = "block";
-      }
-
-      function closeNavUpdate() {
-        // document.getElementById("updateProfile").style.width = "0";
-        document.getElementById("updateProfile").style.display = "none";
-      }
     </script>
   </body>
 </html> 

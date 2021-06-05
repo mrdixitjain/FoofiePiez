@@ -14,6 +14,7 @@
 				padding: 5%;
         color: #212529;
         background-color: rgb(227, 227, 227);
+        text-transform: capitalize;
 			}
 		</style>
 	</head>
@@ -33,8 +34,9 @@
             <input type="text" class="form-control c" name="price" placeholder="Dish-Price" id="ac">
           </div>
           <div class="col-md-3">
-            <button class="btn btn-primary"  id="ac" style="color: white;border-color: black;">add</button>
+            <button class="btn btn-primary"  id="ac" style="color: white;border-color: black;">Add</button>
             <button class="btn btn-primary"  id="ad" style="color: white;border-color: black;">Logout</button>
+            <br>
             <form id="myform" method="post" action="/pending-orders">
               <input type="hidden" name="name" value="value" /> 
               <button onclick="document.getElementById('myform').submit();">Pending Orders</button>
@@ -45,99 +47,21 @@
 			<div class="data col-md-9 ">
 				<div class="row pl-auto pr-auto" style="height: 50px; color: black; background-color: white; font-size: large;">
 					<div class="col-md-3 mt-auto mb-auto c">Dish</div>
-					<div class="col-md-3 mt-auto mb-auto c">Price</div>
-          <div class="col-md-3 mt-auto mb-auto c">Quantity</div>
+					<div class="col-md-3 mt-auto mb-auto c">Volume</div>
+          <div class="col-md-3 mt-auto mb-auto c">Price</div>
 					<div class="col-md-2 mt-auto mb-auto c">Actions</div>
 				</div>				
 				<% for(var i = 0;i < objects.dishes.length; i++) { %>
-          <div class="row mt-2" id="<%= objects.dishes[i].dish%>1234">
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].dish%>"id="<%= objects.dishes[i].dish%>1"></div>
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%=objects.dishes[i].quantity%>"id="<%= objects.dishes[i].dish%>12"></div>	
-            <div class="col-md-3 mt-auto mb-auto c" ><input type="number" class="c t" value="<%=objects.dishes[i].price%>"id="<%= objects.dishes[i].dish%>123"></div>					
-            <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info my-button" id="<%= objects.dishes[i].dish%>"><i class="fa fa-minus fa-lg remove" ></i></button></div> 
-            <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info update" id="<%= objects.dishes[i].dish%>123" type="submit">Update</button></div> 					
+          <div class="row mt-2" id="<%= objects.dishes[i].dish%>">
+            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].dish%>" id="<%= objects.dishes[i].did%>1" style="color: #212529" disabled></div>
+            <div class="col-md-3 mt-auto mb-auto c" ><input type="text" class="c t" value="<%= objects.dishes[i].volume%>" id="<%= objects.dishes[i].did%>12" ></div>	
+            <div class="col-md-3 mt-auto mb-auto c" ><input type="number" class="c t" value="<%=objects.dishes[i].price%>" id="<%= objects.dishes[i].did%>123"></div>					
+            <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info remove" id="<%= objects.dishes[i].did%>"><i class="fa fa-minus fa-lg remove" ></i></button></div> 
+            <div class="col-md-1 mt-auto mb-auto c"><button class="c btn btn-md btn-info update" id="<%= objects.dishes[i].did%>1234" type="submit">Update</button></div> 					
           </div>
 				<% } %>
 			</div>
 		</div>
-    <script type="text/javascript">
-      $(document).ready(function(){
-        //Delete the entry from the database when delete button clicked
-        $(document).on('click',".my-button",function () {
-          let id=$(this).attr('id');
-          let dish_name_id = '#'+id+'1';
-          let dish_price_id = dish_name_id+'2';
-          let main_div = dish_name_id+'1234';
-          let r_id = $("h1").attr('id');
-          console.log(r_id,dish_name_id,dish_price_id,id,$(dish_name_id).val(),$(dish_price_id).val());
-          
-          let obj = {dishes:$(dish_name_id).val(),price:$(dish_price_id).val(),rid:r_id};
-          console.log(obj);				
-          let str = "/remove/dishes";					
-          $.post(str,{obj,"hi":"don"},(data)=>{
-            if(data !== 'done'){
-              alert('Deletion Unsuccessful');
-            }
-            else{
-              alert('Deletion Successful');            
-              //$(main_div).remove();
-              location.reload(true);
-            }
-          });
-        });
-
-        $(document).on('click','#ad',(data)=>{
-          window.location.href="/logout";
-        })
-        $(document).on('click','#ac',function () {
-          let id= '#ac';
-          let dish_name_id = '#aa'
-          let dish_quantity_id = '#ab';
-          let dish_price_id = '#ac';
-          let r_id = $("h1").attr('id');
-          console.log($("h1").html())
-          console.log(r_id,dish_name_id,dish_quantity_id, dish_price_id,id,$(dish_name_id).val(),$(dish_price_id).val());
-          
-          let obj = {dish: $(dish_name_id).val(), quantity : $(dish_quantity_id).val(), price: $(dish_price_id).val(), rid: r_id};
-          console.log(obj);				
-          let str = "/add/dish";
-            
-          $.post(str,{obj,"hi":"don"},(data)=>{
-            if(data !== 'done'){
-              alert('Insertion Unsuccessful');
-              location.reload(true);
-            }
-            else{
-              alert('Insertion Successful');            
-              //$(main_div).remove();
-              location.reload(true);
-            }
-          });
-        });
-        //Block the entry from the database when delete button clicked
-        $(document).on('click',".update",function () {
-          let id = $(this).attr('id');
-          let r_id = $("h1").attr('id');
-          let dish_name = '#'+id.slice(0,id.length-2);
-          let dish_price_id = dish_name+'2';
-          console.log(id,$(dish_name).val());
-          let obj = {dishes:$(dish_name).val(),price:$(dish_price_id).val(),rid:r_id}
-          let str = "/update/dishes";
-          console.log(obj);
-            
-          $.post(str,{obj,"hi":"don"},(data)=>{
-            if(data !== 'done'){
-              alert('Updation Unsuccessful');
-              location.reload(true);
-            }
-            else{
-              alert('Updation Successful');            
-              //$(main_div).remove();
-              location.reload(true);
-            }
-          });				
-        });
-      });		
-    </script>
+    <script type="text/javascript" src="/javascripts/restaurant_homepage.js"></script>
   </body>
 </html>

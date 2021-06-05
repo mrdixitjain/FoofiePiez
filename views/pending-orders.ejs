@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+		<title>Pending-orders</title>
+		<style>
+			body{
+				padding: 5%;
+				color: white;
+        text-transform: capitalize;
+        background-color: rgb(247, 247, 247);
+			}
+
+      .col-md2 {
+        flex: 0 0 16.666667%;
+      }
+
+      .col-md3 {
+        flex: 0 0 25%;
+      }
+
+      .col-md1 {
+        flex: 0 0 8.333333%;
+      }
+		</style>
+	</head>
+	<body style="text-align: center;">
+		<div class="data">
+			<div class="row ml-auto mr-auto" style="height:80px; background-color: #ecebeb;color: black">
+				<div class="col-md1 mt-auto mb-auto ">Oid</div>
+				<div class="col-md1 mt-auto mb-auto">Uid</div>
+				<div class="col-md3 mt-auto mb-auto">Items</div>
+				<div class="col-md2 mt-auto mb-auto">Total</div>
+				<div class="col-md2 mt-auto mb-auto">Status</div>
+				<div class="col-md2 mt-auto mb-auto">Accept</div>
+			</div>
+			<div>
+				<% for(var i=0; i < results.length; i++) { %>
+					<div class="row ml-auto mr-auto row bg-dark mt-2" style="height:auto; background-color: black; color: white; margin-bottom: 5px; float: left; width: 100%;">
+						<div class="col-md1 mt-auto mb-auto " id="<%= results[i].oid %>"><%= results[i].oid %></div>
+						<div class="col-md1 mt-auto mb-auto"><%= results[i].uid %></div>
+            <div class="col-md3">
+            <% for(var j=0; j < Object.keys(results[i].orderDetail).length; j++) { %>
+              <span class="mt-auto mb-auto""><%= results[i].orderDetail[j+1].dishName %> - </span>
+              <span class="mt-auto mb-auto "><%= results[i].orderDetail[j+1].volume %></span>
+              <span class="mt-auto mb-auto "> * <%= results[i].orderDetail[j+1].quantity %></span>
+              <br>
+							<%}%>
+
+            <!-- <% for(var j=0; j < Object.keys(results[i].orderDetail).length; j++) { %>
+              <div class="col-md2 mt-auto mb-auto""><%= results[i].orderDetail[j+1].dishName %></div>
+              <div class="col-md1 mt-auto mb-auto "><%= results[i].orderDetail[j+1].volume %></div>
+              <div class="col-md1 mt-auto mb-auto "><%= results[i].orderDetail[j+1].quantity %></div>
+              <br>
+            <%}%> -->
+            </div>
+						<div class="col-md2 mt-auto mb-auto"><%= results[i].total %></div>
+						<div class="col-md2 mt-auto mb-auto"><%= results[i].status %></div>
+						<% if(results[i].status=='preparing') {%>
+							<div class="col-md2 mt-auto mb-auto"><button class="btn btn-md btn-info picked" id="<%= results[i].oid %>" type="submit">Picked Up?</button></div> 
+						<%}
+						else if(results[i].status=='Out For Delivery'){%>
+							<div class="col-md2 mt-auto mb-auto"><button class="btn btn-md btn-info picked" id="<%= results[i].oid %>" type="submit" disabled>Picked Up.</button></div> 
+						<%}
+            else if(results[i].status=='delivered'){%>
+							<div class="col-md2 mt-auto mb-auto"><button class="btn btn-md btn-info picked" id="<%= results[i].oid %>" type="submit" disabled>Delivered</button></div> 
+						<%}
+            else if(results[i].status=='cancelled by restaurant'){%>
+							<div class="col-md2 mt-auto mb-auto"><button class="btn btn-md btn-info picked" id="<%= results[i].oid %>" type="submit" disabled>Cancelled</button></div> 
+						<%}
+            else if(results[i].status=='cancelled by user'){%>
+							<div class="col-md2 mt-auto mb-auto"><button class="btn btn-md btn-info picked" id="<%= results[i].oid %>" type="submit" disabled>Cancelled By User</button></div> 
+						<%}
+						else { %>
+							<div class="col-md2 mt-auto mb-auto">
+                <button class="btn btn-md btn-info accept" id="<%= results[i].oid %>" type="submit">Accept</button>
+                <button class="btn btn-md btn-info reject" id="<%= results[i].oid %>" type="submit">Reject</button>
+              </div> 
+						<% } %>
+					</div>
+				<% } %>
+			</div>
+		</div>
+    <script type="text/javascript" src="/javascripts/pending-orders.js"></script>
+	</body>
+	</html>
+
+
+			

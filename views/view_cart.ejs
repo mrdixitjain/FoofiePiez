@@ -9,6 +9,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/javascripts/view-cart.js"></script>
+  <script type="text/javascript" src="/javascripts/sidenav.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/sidenav.css">
   <style>
     body 
     {
@@ -16,6 +19,7 @@
       background-repeat: no-repeat;
       background-size: cover;
       background-color: rgb(247, 247, 247);
+      text-transform: capitalize;
     }
   </style>
   <script type="text/javascript">
@@ -28,40 +32,45 @@
         alert("                             SORRY!\nYou can place maximum two orders at a time");
       }
     }
-    $(document).ready(() => {
-      $(document).on('click', ".inc", function () {
-        //prompt('Are you sure');
-        let id=$(this).attr('id');
-        let str="/cart-increment";
-        $.post(str, {id: id}, (data) => {
-          console.log(data)
-          location.reload(true);
-        })
-      });
-
-      $(document).on('click', ".dec", function () {
-        //prompt('Are you sure');
-        let id=$(this).attr('id');
-        let str="/cart-decrement";
-        $.post(str, {id:id}, (data)=>{
-          console.log(data)
-          location.reload(true);
-        })
-      });
-
-      $(document).on('click', ".remove_button", function () {
-        //prompt('Are you sure');
-        let id=$(this).attr('id');
-        let str="/cart-deletion";
-        $.post(str, {id:id}, (data)=>{
-          console.log(data)
-          location.reload(true);
-        })
-      });
-    })
   </script>
 </head>
-<body style="text-transform: capitalize;">
+<body>
+  <div id="mySidenav" class="sidenav" style="background-color: #e9e9e9;">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="color: black;">&times;</a>
+    <!-- <br> -->
+    <label for="uname"><b>Username:</b></label>
+    <br>
+    <div style=" margin-left: 5px;"><b><%= user.userDetail.name %></b></div>
+    <hr>
+    <label for="uname"><b>Phone:</b></label>
+    <br>
+    <div style=" margin-left: 5px;"><b><%= user.userDetail.phone %></b></div>
+    <hr>
+    <label for="uname"><b>Email:</b></label>
+    <br>
+    <div style=" margin-left: 5px; text-transform: lowercase;"><b><%= user.userDetail.email %></b></div>
+    <hr>
+    <b><span class="navbar-toggler navbar-toggler-right" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 70px; margin-top: 30px;" onclick="openNavUpdate() ">Edit Profile</span></b>
+  </div>
+  
+  <div id="updateProfile" class="updateProfile" style="background-color: #e9e9e9;">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNavUpdate()" style="color: black;">&times;</a>        
+    <form action="/update-profile" method="post">
+      <label for="uname"><b>Email:</b></label>
+      <br>
+      <input type="email" name="email" value="<%= user.userDetail.email %>" required>
+      <hr>
+      <label for="uname"><b>Phone:</b></label>
+      <br>
+      <input type="text" name="phone" value="<%= user.userDetail.phone %>" required>
+      <hr>
+      <label for="uname"><b>Password:</b></label>
+      <br>
+      <input type="password" name="password" value="<%= user.userDetail.password %>" required>
+      <hr>
+      <b><button class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 100px; margin-top: 30px; text-align: center;">Update</button></b>
+    </form>
+  </div>
   <div style="background-color:#343a40; width: 100%; height: 85px; position: fixed; z-index: 1; align-items: center; top: 0; left: 0; right: 0;">
     <nav class="navbar navbar-expand bg-dark" style="margin-left: 100px; max-width: 1270px; min-width: 1270px; z-index: 100; position: fixed;">
       <a class="navbar-brand" href="/homepage"><h3 style="margin-left: 40px; margin-top: 10px; color: #fc8019;"><b>FoodiePie</b></h3></a>

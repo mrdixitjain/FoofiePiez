@@ -48,10 +48,18 @@ router.get('/', (req, res) => {
 
 app.route("/user-signin")
   .get((req, res) => {
-    res.render("user_signin", {
-      "attempt" : 0,
-      "wrongField" : "",
-    });
+    if (!req.session.usertype) {
+      res.render("user_signin", {
+        "attempt" : 0,
+        "wrongField" : "",
+      });
+    }
+    else if (req.session.usertype == 'restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
+    else {
+      res.redirect("/homepage");
+    }    
   })
   .post((req, res) => {
     var email = req.body.email;
@@ -81,6 +89,7 @@ app.route("/user-signin")
             req.session.email = results[0].email;
             req.session.phone = results[0].phone;
             req.session.password = results[0].password;
+            req.session.usertype = 'user';
             req.session.uid = results[0].uid;
             req.session.userDetail = {
               name : req.session.username,
@@ -101,10 +110,18 @@ app.route("/user-signin")
 
 app.route('/user-signup')
   .get((req, res) => {
-    res.render("user_signup", {
-      "attempt" : 0,
-      'signedup' : 0
-    });
+    if (!req.session.usertype) {
+      res.render("user_signup", {
+        "attempt" : 0,
+        'signedup' : 0
+      });
+    }
+    else if (req.session.usertype == 'restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
+    else {
+      res.redirect("/homepage");
+    }  
 	})
   .post((req, res) => {
     var phone = req.body.phone;
@@ -254,7 +271,15 @@ router.get('/homepage', (req, res) => {
 
 router.route('/restaurant-signup')
   .get((req, res) => {
-    res.render('restaurant_signup', {attempt: 0, signedup : 0});
+    if (!req.session.usertype) {
+      res.render('restaurant_signup', {attempt: 0, signedup : 0});
+    }
+    else if (req.session.usertype == 'restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
+    else {
+      res.redirect("/homepage");
+    } 
   })
   .post( (req, res) => {
     let name = req.body.name;
@@ -268,21 +293,6 @@ router.route('/restaurant-signup')
     let answer = req.body.answer;
     let cft = req.body.cft;
     let type = req.body.type;
-
-    // sql = `CREATE TABLE restaurant (
-    //   rid varchar(20),
-    //   rname varchar(255),
-    //   phone varchar(20),
-    //   email varchar(255),
-    //   password varchar(255),
-    //   address varchar(500),
-    //   city varchar(255),
-    //   postal varchar(255),
-    //   owner varchar(255),
-    //   answer varchar(255),
-    //   cost varchar(255),
-    //   type varchar(255)
-    // );`
 
     sql = `SELECT * FROM restaurant
       WHERE phone=? OR email=?;`;
@@ -309,7 +319,15 @@ router.route('/restaurant-signup')
 
 app.route('/restaurant-signin')
   .get((req,res) => {
-    res.render('restaurant_signin', {attempt: 0, wrongField: ""});
+    if (!req.session.usertype) {
+      res.render('restaurant_signin', {attempt: 0, wrongField: ""});
+    }
+    else if (req.session.usertype == 'restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
+    else {
+      res.redirect("/homepage");
+    }
   })
   .post((req, res) => {
     var email = req.body.email;
@@ -326,51 +344,145 @@ app.route('/restaurant-signin')
         res.render("restaurant_signin", {attempt:1, wrongField:'Email'});
       }
       else if(results[0].password == password) {
-        let data = req.body;
-        let email = req.body.email;
-        let pass = req.body.password;
-        let objects = {};
-        res.set('Access-Control-Allow-Origin','*');
-        sql = `SELECT r.rname, r.rid, d.name, d.price, d.quantity 
-          FROM restaurant r LEFT JOIN dish d ON d.rid = r.rid WHERE r.email = ? and r.password = ?;`;
-
-        con.query(sql, [email, pass], (err, results) => {
-          if (err) {
-            console.log("MYSQL ERROR IN /restaurants-signin", err);
-            res.render('restaurant_signin',{attempt: 0, "wrongField" : ""});
-          }
-          else {
-            if(results.length === 0) {
-              console.log("MYSQL ERROR! restaurant's entry not found");
-              res.render('restaurant_signin',{attempt: '1', wrongField: "Email"});
-            }
-            else {
-              objects = {};
-              objects.rid = results[0].rid;
-              objects.rname = results[0].rname;
-              objects.dishes = [];
-              let arr = [];
-
-              // push dish and it's price in an array
-              results.forEach((data)=>{
-                arr.push({dish : data.name, price : data.price, quantity : data.quantity});
-              });
-              objects.dishes = arr;
-
-              var send = async()=>{
-                res.render('restaurant_homepage', {objects:objects});
-              }
-              //Send the object
-              send();
-            }
-          }
-        });
+        req.session.usertype = 'restaurant';
+        req.session.rid = results[0].rid;
+        req.session.rname = results[0].rname;
+        res.redirect("/restaurant-homepage");
       }
       else {
         res.render("restaurant_signin", {attempt:1, wrongField:'Password'})
       }
     });
   });
+
+app.route("/restaurant-homepage")
+  .get((req, res) => {
+    if (req.session.usertype != 'restaurant' || !req.session.rid) {
+      res.redirect("/restaurant-signin");
+    }
+    else {
+      let rid = req.session.rid;
+      let rname = req.session.rname;
+      let objects = {};
+      let sql = `SELECT r.rname, r.rid, d.name, d.price, d.volume, d.did 
+        FROM restaurant r LEFT JOIN dish d ON d.rid = r.rid 
+        WHERE r.rid = ? AND d.deleted = 0 ;`;
+
+      con.query(sql, [rid], (err, result) => {
+        if (err) {
+          console.log("MYSQL ERROR IN /restaurants-signin", err);
+          res.render('restaurant_signin',{attempt: 0, "wrongField" : ""});
+        }
+        else {
+          if(result.length === 0) {
+            console.log("No dishes in this restaurant.");
+            res.render('restaurant_homepage',{objects: {
+                                                rid: rid,
+                                                rname: rname,
+                                                dishes: []
+                                              }});
+          }
+          else {
+            objects = {};
+            objects.rid = rid;
+            objects.rname = rname;
+            objects.dishes = [];
+            let arr = [];
+            
+            result.forEach((data)=>{
+              arr.push({dish : data.name, price : data.price, volume : data.volume, did: data.did});
+            });
+            objects.dishes = arr;
+
+            var send = async()=>{
+              res.render('restaurant_homepage', {objects: objects});
+            }
+            send();
+          }
+        }
+      });
+    }
+  });
+
+app.route("/pending-orders")
+  .post((req, res) => {
+    if (req.session.usertype != 'restaurant' || !req.session.rid) {
+      res.redirect("/restaurant-signin");
+    }
+    else {
+      let rid = req.session.rid;
+      let sql = `SELECT * FROM (SELECT o.*, r.rname FROM orders o LEFT JOIN restaurant r
+        ON o.rid = r.rid where r.rid = ?) as tbl LEFT JOIN oitems on
+        tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did;`;
+      con.query(sql, [rid], (err, results) => {
+        if (err) {
+          console.log("MYSQL error in /pending-orders");
+          console.log(err);
+          res.redirect("/restaurant-homepage");
+        }
+        else {
+          var i=0;
+          while(i < results.length){
+            results[i].orderDetail = {1: {dishName: results[i].name, volume: results[i].volume, quantity: results[i].quantity, price: results[i].price}};
+            results[i].total = results[i].quantity * parseFloat(results[i].price);
+            delete results[i].dishName;
+            delete results[i].quantity;
+            delete results[i].price;
+            var j = i+1;
+            var k = 2;
+            while(j < results.length && results[j].oid == results[i].oid) {
+              results[i].orderDetail[k] = {dishName: results[j].name, quantity: results[j].quantity, price: results[j].price, volume: results[j].volume};
+              results[i].total += results[j].quantity * parseFloat(results[j].price);
+              results.splice(j, j+1);
+              k += 1;
+            }
+            results[i].total = results[i].total.toFixed(2);
+            i++;
+          }
+          console.log(results);
+          console.log(results[0].orderDetail);
+          res.render("pending-orders", {results : results});
+        }
+      });
+    }
+  });
+
+app.post("/accept-order", (req, res)=>{
+  con.query("UPDATE orders SET status='preparing' WHERE oid=?", [req.body.oid], (err, results) => {
+    if (err) { 
+      console.log(err);
+      res.send('not done');
+    }
+    else{
+      res.send('done');
+    }
+  });
+});
+
+app.post("/order-picked", (req, res)=>{
+	con.query("UPDATE orders SET status='Out For Delivery' WHERE oid=?", [req.body.oid], (err, results) => {
+		if (err) { 
+      console.log(err);
+			res.send('not done');
+		}
+		else{
+			res.send('done');
+		}
+	});
+});
+
+app.post("/cancel-order", (req, res)=>{
+  let status = 'cancelled by ' + req.session.usertype;
+	con.query("UPDATE orders SET status=? WHERE oid=?", [status, req.body.oid], (err, results) => {
+		if (err) { 
+      console.log(err);
+			res.send('not done');
+		}
+		else{
+			res.send('done');
+		}
+	});
+});
 
 app.route('/restaurant-forgot-password')
   .get((req, res) => {
@@ -429,23 +541,22 @@ app.route('/restaurant-forgot-password')
 app.post('/add/dish',(req,res)=>{
   let data = req.body.obj;
   res.set('Access-Control-Allow-Origin','*');
-  sql = "SELECT * FROM dish;";
+  sql = "SELECT MAX(did) as did FROM dish;";
   con.query(sql, (err, results) => {
     if (err) {
       console.log("MYSQL ERROR IN /add/dish", err);
       res.send("not-inserted in dish table");
     }
     else {
-      var did = results.length + 1;
+      var did = results[0].did + 1;
       var dish = data.dish.toLowerCase();
       var quantity = data.quantity.toLowerCase();
       var price = data.price;
-      let sql = "INSERT INTO dish VALUES(?, ?, ?, ?, ?)"
+      let sql = "INSERT INTO dish VALUES(?, ?, ?, ?, ?, 0)"
       let query = con.query(sql,[did, data.rid, dish, quantity, price],(err,results,fields)=>{
         if(err){
           console.log("MYSQL ERROR", err);
           res.send('not-inserted in dish table');
-          //throw err;
         }
         else{
           res.send('done');
@@ -453,6 +564,51 @@ app.post('/add/dish',(req,res)=>{
       });
     }
   });
+});
+
+app.post('/remove/dish',(req,res) => {
+	let dish_data = req.body.obj;
+	let sql = "DELETE FROM cart WHERE did = ?;";
+	con.query(sql, [dish_data.did, dish_data.did], (err,results) => {
+		if(err){
+			console.log("MYSQL ERROR in /remove/dish");
+      console.log(err);
+			res.send('not-done in cart table');
+		}
+		else{
+      sql = "UPDATE dish SET deleted = true WHERE did = ?;";
+      con.query(sql, [dish_data.did, dish_data.did], (err,results) => {
+        if(err){
+          console.log("MYSQL ERROR in /remove/dish");
+          console.log(err);
+          res.send('not-done in dish table');
+        }
+        else {
+          res.send('done');
+        }
+      });
+		}
+	});
+});
+
+app.post('/update/dish',(req,res)=>{
+	let dish_data = req.body.obj;
+  let did = dish_data.did;
+  let price = dish_data.price;
+  let volume = dish_data.volume;
+
+	res.set('Access-Control-Allow-Origin','*');
+  let sql = 'UPDATE dish SET dish.price = ?, dish.volume = ? WHERE did = ?;';
+	let query = con.query(sql, [price, volume, did],(err, results, fields) => {
+		if(err){
+			console.log("MYSQL ERROR",err);
+			res.send('not-updated in dishes table');
+			//throw err;
+		}
+		else{
+			res.send('done');
+		}
+	})
 });
 
 app.route('/search-by-location')
@@ -506,7 +662,7 @@ app.get("/restaurant/:id", (req, res)=>{
     user.userDetail = req.session.userDetail;
 	}
 	var restaurant=req.params.id;
-	var sql="SELECT * FROM dish WHERE rid in (SELECT rid FROM restaurant WHERE rname = ?);";
+	var sql="SELECT * FROM dish WHERE rid in (SELECT rid FROM restaurant WHERE rname = ?) AND deleted != true;";
 	con.query(sql, [restaurant], (err, results)=>{
 		if(err) {
       console.log("SQL error in /restaurant/:id.");
@@ -559,6 +715,9 @@ app.get('/logout', (req, res) => {
 
 app.route('/orders')
 	.get((req, res, next) => {
+    if(req.session.usertype=='restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
 
     if(!req.session.email) {
       req.session.redirectTo = '/orders';
@@ -576,14 +735,16 @@ app.route('/orders')
                   ON o.rid = r.rid where o.uid = ?) as tbl LEFT JOIN oitems on
                   tbl.oid = oitems.oid LEFT JOIN dish on oitems.did = dish.did;`;
       con.query(sql, [uid], (err, results) => {
-        if (err) throw err;
+        if (err) {
+          console.log("SQL error in /orders");
+          console.log(err);
+          res.redirect("/homepage");
+        }
         else if(results.length==0) {
           console.log('no previous orders')
           res.render('no-orders', {user: user})
         }
-
         else {
-          let total = 0;
           var i=0;
           while(i < results.length){
             results[i].orderDetail = {1: {dishName: results[i].name, quantity: results[i].quantity, price: results[i].price}};
@@ -761,7 +922,9 @@ app.route('/viewCart')
           });
         }
         var b = await function() {
-          let sql = `SELECT * FROM orders WHERE uid = ? and status = 'ongoing';`;
+          let sql = `SELECT * FROM orders 
+              WHERE uid = ? AND 
+              status != 'delivered' AND status != 'cancelled by user' AND status != 'cancelled by restaurant';`;
           con.query(sql, [uid], (err, results) => {
             if(results.length >= 2) {
               req.session.mayOrder = false;
@@ -797,7 +960,7 @@ app.route("/cart-increment")
     });
   });
 
-  app.route("/cart-decrement")
+app.route("/cart-decrement")
   .post((req, res) => {
     var did = req.body.id;
     var uid = req.session.uid;
@@ -843,7 +1006,7 @@ app.route("/cart-increment")
     });
   });
 
-  app.route("/cart-deletion")
+app.route("/cart-deletion")
   .post((req, res) => {
     var did = req.body.id;
     var uid = req.session.uid;
@@ -934,7 +1097,7 @@ app.route("/checkout")
 			}
 			var b = await function(){
 				var sql2 = "INSERT INTO orders VALUES(?, ?, ?, ?, ?, ?);";
-				con.query(sql2, [oid, uid, req.session.rid, 'ongoing', address, "COD"], (err, results)=>{
+				con.query(sql2, [oid, uid, req.session.rid, 'waiting for confirmation', address, "COD"], (err, results)=>{
 					if (err) {
             console.log("SQL error in /placeorder 2");
             res.redirect("/checkout");
@@ -962,7 +1125,12 @@ app.route("/checkout")
 
 app.route('/searchRestaurant')
 	.get((req, res) => {
-		res.redirect("/homepage");
+    if (req.session.usertype == 'restaurant') {
+      res.redirect("/restaurant-homepage");
+    }
+    else {
+      res.redirect("/homepage");
+    }
 	})
 	.post((req, res) => {
     var user={userDetail: {}, signed_in: false, search: false};
@@ -976,13 +1144,19 @@ app.route('/searchRestaurant')
     else {
       let restaurantName = req.body.restaurantName;
       var sql = `SELECT * FROM restaurant WHERE rname RLIKE ?
-                  OR rid IN (SELECT rid FROM dish WHERE name RLIKE ?);`;
+                  OR rid IN (SELECT rid FROM dish WHERE name RLIKE ? AND deleted != true);`;
       var a = async function(){
         con.query(sql, [restaurantName, restaurantName], function(err, results, fields) {
           if (err) {
             console.log("SQL error in /searchRestaurant");
             console.log(err);
             res.redirect("/homepage");
+          }
+          else if (results.length == 0) {
+            res.render("sorry-page", {user: user, 
+                                      cart_num: req.session.cart_num,
+                                      location : req.session.location,
+                                      updateFailed: 2});
           }
           else {
             res.render("homepage", {

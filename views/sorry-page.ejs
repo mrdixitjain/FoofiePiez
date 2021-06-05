@@ -1,130 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
   <head>
-    <title>Order Food Online On Foodieie</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="javascript:void(0)" />
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/sidenav.css">
-    <script type="text/javascript" src="/javascripts/sidenav.js"></script>
-    <style>
-      .card {
-        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-        transition: 0.3s;
-        width: 40%;
-      }
-
-      .card:hover {
-        box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
-      }
-
-      .container {
-        padding: 2px 16px;
-      }
-      body 
-      {
-        /* background-image: url('img5.jpeg'); */
-        background-repeat: no-repeat;
-        background-size: 100%;
-        background-attachment: fixed;
-        text-transform: capitalize;
-        background-color: rgb(247, 247, 247);
-      }
-
-      .sidenav {
-          height: 100%;
-          width: 280px;
-          display: none;
-          position: fixed;
-          z-index: 1;
-          margin-top: 65px;
-          top: 0;
-          left: 0;
-          background-color: inherit;
-          overflow-x: hidden;
-          transition: 0.5s;
-          padding-top: 60px;
-          padding-left: 5px;
-      }
-
-      .sidenav a {
-          padding: 8px 8px 8px 32px;
-          text-decoration: none;
-          font-size: 25px;
-          color: black;
-          display: block;
-          transition: 0.3s;
-      }
-
-      .sidenav a:hover {
-          color: #f1f1f1;
-      }
-
-      .sidenav .closebtn {
-          position: absolute;
-          top: 0;
-          right: 25px;
-          font-size: 36px;
-          margin-left: 50px;
-      }
-
-      @media screen and (max-height: 450px) {
-          .sidenav {padding-top: 15px;}
-          .sidenav a {font-size: 18px;}
-      }
-
-      .updateProfile {
-          height: 100%;
-          display: none;
-          width: 280px;
-          margin-top: 65px;
-          position: fixed;
-          z-index: 1;
-          top: 0;
-          left: 0;
-          background-color: inherit;
-          overflow-x: hidden;
-          transition: 0.5s;
-          padding-top: 60px;
-          padding-left: 5px;
-      }
-
-      .updateProfile a {
-          padding: 8px 8px 8px 32px;
-          text-decoration: none;
-          font-size: 25px;
-          color: black;
-          display: block;
-          transition: 0.3s;
-      }
-
-      .updateProfile a:hover {
-          color: #f1f1f1;
-      }
-
-      .updateProfile .closebtn {
-          position: absolute;
-          top: 0;
-          right: 25px;
-          font-size: 36px;
-          margin-left: 50px;
-      }
-
-      @media screen and (max-height: 450px) {
-          .updateProfile {padding-top: 15px;}
-          .updateProfile a {font-size: 18px;}
-      }
-
-    </style>
+	<title>Order Food Online On Foodieie</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="css/sidenav.css">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+	</script>
+	<style>
+    body {
+      background: none;
+    }
+	</style>
   </head>
   <body>
     <% if(user.signed_in) {%>
-      <div id="mySidenav" class="sidenav" >
+      <div id="mySidenav" class="sidenav" style="background-color: #e9e9e9;">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()" style="color: black;">&times;</a>
         <!-- <br> -->
         <label for="uname"><b>Username:</b></label>
@@ -142,7 +38,7 @@
         <b><span class="navbar-toggler navbar-toggler-right" style="cursor: pointer; color: black; border-color: black; float: right; margin-right: 70px; margin-top: 30px;" onclick="openNavUpdate() ">Edit Profile</span></b>
       </div>
       
-      <div id="updateProfile" class="updateProfile">
+      <div id="updateProfile" class="updateProfile" style="background-color: #e9e9e9;">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNavUpdate()" style="color: black;">&times;</a>        
         <form action="/update-profile" method="post">
           <label for="uname"><b>Email:</b></label>
@@ -187,12 +83,18 @@
               </div> 
             </li>          
           </ul>
-          <ul class="navbar-nav" style="margin-right: 50px; font-size: 16px;font-weight: 500;"> 
+          <ul class="navbar-nav" style="margin-right: 50px; font-size: 16px; font-weight: 500;"> 
+            <li class="nav-item">
+              <h4 type="button" class="btn" data-toggle="modal" data-target="#myModal" style="background-color: #343a40 !important; border-color: #343a40 !important; margin-right: 30px; color: white;">
+                <i class="fa fa-search"></i>
+              </h4>
+              <!-- The Modal -->
+            </li>
             <% if(user.signed_in) {%>
               <li class="nav-item">
                 <div class="dropdown" style="text-align: center; align-content: center; height: 10px">
                   <a type="button" class="nav-link dropdown-toggle" data-toggle="dropdown" style="background-color: #343a40; color: white; margin-right: 30px; padding-top: 5px; margin-top: 5px">
-                    Hey! <%= user.userDetail.name %>
+                    Hello! <%= user.userDetail.name %>
                   </a>
                   <div class="dropdown-menu" style="padding-top: 10px; margin-top: 30px">
                     <span class="dropdown-item" style="cursor:pointer" onclick="openNav()">Your Account</span>
@@ -235,50 +137,46 @@
         </div>
       </nav>
     </div>
-    <br>
-    <br>
-    <h1 id='<%= name %>' style="color: #343a40; margin-left: 180px; margin-top: 50px;"><b><%= name %></b></h1>
-    <br>
-    <div class="container" style="min-width: 800px; max-width: 1000px;">
-      <div class="card-columns" style="column-count: 3;">
-        <% for(var i=0; i < searchDetail.length; i++) {%>
-          <div class="card" id="card" style="width: auto; margin-left: 20px; cursor: default;">
-            <img src="https://res.cloudinary.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_508,h_320,c_fill/aylqjejobls1aobd0fun" class="card-img-top" alt="">
-            <div class="card-body">
-              <h5 class="card-title" class="dish" id="<%= searchDetail[i].name + '_' + i %>_name"><%= searchDetail[i].name %></h5>
-              <p class="card-text" id="<%= searchDetail[i].name + '_' + i %>_quantity"><%= searchDetail[i].quantity %></p>
-              <p class="card-text" id="<%= searchDetail[i].name + '_' + i %>_price"><i class="fa fa-inr" aria-hidden="true"></i> <%= searchDetail[i].price %></p>
-              <button class="add" style="text-align: center; padding-top: 10px; float: right; margin-bottom: 10px; width: 100%;" id="<%= searchDetail[i].did %>">Add</p>
-            </div>
-          </div>
-        <%}%>
+    <div style="margin-top: 250px; align-content: center;">
+      <div class="container" style="color: black; width: 700px; text-align: center;">
+        <h1 style="margin-top: 24px; font-size: 20px; font-weight: 600; color: #535665;">Sorry, No restaurant Found for your Location/Search.</h1>
+        <p style="margin-top: 8px; color: #7e808c; font-weight: 300; font-size: 14px;">Please Change Your Location/Search to see restaurants near you</p>
       </div>
     </div>
-    <p id="print"></p>
+    <div class="modal" id="myModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Modal body -->
+          <div class="modal-body">
+            <form class="form-inline my-2 my-lg-0" action="/searchRestaurant" method="post">
+              <input class="form-control mr-sm-2" type="text" placeholder="Search For Restaurant Or Dishes" id="restaurantName" name="restaurantName" value="" style="width:400px; margin-left: 10px">
+              <button class="navbar-toggler navbar-toggler-right" type="submit" data-toggle="collapse" data-target="#navb" id="searchByName">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="/javascripts/sidenav.js"></script>
+    <script type="text/javascript">
+      var input = document.getElementById("location");
+      input.addEventListener("keyup", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          document.getElementById("locationButton").submit();
+        }
+      });
 
-    <script>
-      $(document).ready(() => {
-        var x = <%= cart_num %> + 1;
-        $(document).on('click', '.add', function(data){
-          let signed_in = <%= user.signed_in %>;
-          if(!signed_in) {
-            window.location.href = "/user-signin";
-          }
-          else {
-            console.log('button clicked');
-            let dish_id = $(this).attr('id');
-            obj = {did:dish_id};
-            
-            $.post('/addToCart', {obj}, (data) => {
-              if(data['done'] == 'done'){                
-                $('.cart').html(data.cart_num);
-                x = data.cart_num;
-                x+=1;                
-              }
-            })
-          }
-        });
+      $(document).ready(function(){
+        <% if(updateFailed == 1){%>
+          alert('Update Failed. Either server issue or this Email or Phone is being used by other user.');
+          <%}
+          else if(updateFailed == 0){%>
+            alert('Update done');
+          <%}
+        %>
       });
     </script>
   </body>
-</html> 
+</html>
