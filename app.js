@@ -214,9 +214,6 @@ app.route('/user-forgot-password')
   });
 
 router.get('/homepage', (req, res) => {
-  // res.redirect("/orders");
-  req.session.location = 'malaviya nagar';
-  req.session.city = 'jaipur';
   if (!req.session.cart_num) {
     req.session.cart_num = 0;
   }
